@@ -31,7 +31,7 @@ provider_installation {
 }
 
 ```
-5. check out [./examples/provider-install-verification/main.tf](example terraform config) for how to use it with Linode provider
+5. check out [example terraform config](./examples/provider-install-verification/main.tf) for how to use it with Linode provider
 
 ## Adding Dependencies
 
