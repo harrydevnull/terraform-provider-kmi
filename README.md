@@ -14,7 +14,7 @@
 3. Build the provider using the Go `install` command:
 
 ```shell
-go install
+go install .
 ```
 4. create a `~/.terraformrc`
 ```shell
