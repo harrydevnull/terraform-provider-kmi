@@ -223,5 +223,6 @@ func (p *kmiProvider) DataSources(_ context.Context) []func() datasource.DataSou
 func (p *kmiProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewEngineResource,
+		NewGroupsResource,
 	}
 }

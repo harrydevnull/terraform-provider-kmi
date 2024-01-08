@@ -54,7 +54,16 @@ output "kmioutput" {
 # }
 
 
+
 # output "kmi_engine_create" {
 #   value = kmi_engine.identityengine
 #   sensitive = true
 # }
+
+
+resource "kmi_group" "example" {
+    
+    account_name = "PIM_TEST"
+    group_name = "somevalue"
+    engine       =""
+}
