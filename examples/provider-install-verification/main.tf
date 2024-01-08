@@ -31,7 +31,7 @@ provider "kmi" {
 }
 
 data "kmi_account" "example" {
-    account_name = "PIM_TEST"
+  account_name = "PIM_TEST"
 
 }
 output "kmioutput" {
