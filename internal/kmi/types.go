@@ -117,3 +117,30 @@ type Workload struct {
 		Source string `xml:"source,attr"`
 	} `xml:"kubernetes_service_account"`
 }
+
+type Collection struct {
+	XMLName         xml.Name `xml:"collection"`
+	Text            string   `xml:",chardata"`
+	Name            string   `xml:"name,attr"`
+	Source          string   `xml:"source,attr"`
+	Readers         string   `xml:"readers,attr"`
+	Adders          string   `xml:"adders,attr"`
+	Modifiers       string   `xml:"modifiers,attr"`
+	Modified        string   `xml:"modified,attr"`
+	Distributed     string   `xml:"distributed,attr"`
+	DistributedDate string   `xml:"distributed_date,attr"`
+	Keyspace        string   `xml:"keyspace,attr"`
+	Account         string   `xml:"account,attr"`
+	Definition      []struct {
+		Text string `xml:",chardata"`
+		Name string `xml:"name,attr"`
+	} `xml:"definition"`
+}
+
+type CollectionRequest struct {
+	XMLName   xml.Name `xml:"collection"`
+	Text      string   `xml:",chardata"`
+	Adders    string   `xml:"adders"`
+	Modifiers string   `xml:"modifiers"`
+	Readers   string   `xml:"readers"`
+}

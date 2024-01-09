@@ -103,3 +103,42 @@ func Test_IdentityEngineMarshalling(t *testing.T) {
 	}
 
 }
+
+func Test_CollectionMarshalling(t *testing.T) {
+	data := []byte(`<collection name="PIM_SECRETS" source="restserv:user:hachandr_kmi_cert" readers="PIM_READERS" adders="PIM_TEST_admins" modifiers="PIM_TEST_admins" modified="354310919" distributed="354318302" distributed_date="2024-01-08 20:46:23" keyspace="k3_PIM_SECRETS" account="PIM_TEST">
+	<definition name="ETP_S3"/>
+	<definition name="instance_validator_definition"/>
+	<definition name="master_service_api_definition"/>
+	<definition name="pi_api_definition"/>
+	<definition name="pim_ssl_definition"/>
+	<definition name="pim_ssl_definition2"/>
+  </collection>`)
+	var e1 Collection
+	err := xml.Unmarshal(data, &e1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(e1.Name, "PIM_SECRETS") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Name, "PIM_SECRETS")
+	}
+}
+
+func Test_CollectionRequestMarshalling(t *testing.T) {
+	data := []byte(`<collection><adders>ADMINS</adders><modifiers>ADMINS</modifiers><readers>GROUP</readers></collection>`)
+	var e1 CollectionRequest
+	err := xml.Unmarshal(data, &e1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(e1.Adders, "ADMINS") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Adders, "ADMINS")
+	}
+	if !reflect.DeepEqual(e1.Modifiers, "ADMINS") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Modifiers, "ADMINS")
+	}
+	if !reflect.DeepEqual(e1.Readers, "GROUP") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Readers, "GROUP")
+	}
+}

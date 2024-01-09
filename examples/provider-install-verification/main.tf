@@ -3,21 +3,21 @@ terraform {
     kmi = {
       source = "registry.terraform.io/akamai/kmi"
     }
-    linode = {
-      source  = "linode/linode"
-      version = "2.12.0"
-    }
+    # linode = {
+    #   source  = "linode/linode"
+    #   version = "2.12.0"
+    # }
 
   }
 }
 
-provider "linode" {
-  token = "<>"
-}
+# provider "linode" {
+#   token = "<>"
+# }
 
-data "linode_lke_cluster" "cluster" {
-  id = 143738
-}
+# data "linode_lke_cluster" "cluster" {
+#   id = 143738
+# }
 
 
 
@@ -30,13 +30,13 @@ provider "kmi" {
 
 }
 
-data "kmi_account" "example" {
-  account_name = "PIM_TEST"
+# data "kmi_account" "example" {
+#   account_name = "PIM_TEST"
 
-}
-output "kmioutput" {
-  value = data.kmi_account.example
-}
+# }
+# output "kmioutput" {
+#   value = data.kmi_account.example
+# }
 
 # resource "kmi_engine" "identityengine" {
 
@@ -61,9 +61,18 @@ output "kmioutput" {
 # }
 
 
-resource "kmi_group" "example" {
-    
-    account_name = "PIM_TEST"
-    group_name = "somevalue"
-    engine       =""
+# resource "kmi_group" "example" {
+
+#   account_name = "PIM_TEST"
+#   group_name   = "somevalue"
+#   engine       = ""
+# }
+
+resource "kmi_collections" "collection" {
+  account_name = "PIM_TEST"
+  adders       = "PIM_ADMIN"
+  modifiers    = "PIM_ADMIN"
+  readers      = "PIM_READERS"
+  name         = "testCollection"
+
 }
