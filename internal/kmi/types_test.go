@@ -142,3 +142,39 @@ func Test_CollectionRequestMarshalling(t *testing.T) {
 		t.Errorf("Marshalling() = %v, want %v", e1.Readers, "GROUP")
 	}
 }
+
+func Test_GroupsMarshalling(t *testing.T) {
+	data := []byte(`<group name="PIM_ADMIN" type="union" source="reqserv:user:hachandr_kmi_cert" account="PIM_TEST"><adders>superusers</adders><modifiers>superusers</modifiers></group>`)
+	var e1 KMIGroup
+	err := xml.Unmarshal(data, &e1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(e1.Adders, "superusers") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Adders, "superusers")
+	}
+	if !reflect.DeepEqual(e1.Modifiers, "superusers") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Modifiers, "superusers")
+	}
+	if !reflect.DeepEqual(e1.Account, "PIM_TEST") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Account, "PIM_TEST")
+	}
+
+	if !reflect.DeepEqual(e1.Name, "PIM_ADMIN") {
+		t.Errorf("Marshalling() = %v, want %v", e1.Name, "PIM_ADMIN")
+	}
+}
+func Test_GroupsUnMarshalling(t *testing.T) {
+	group := GroupRequest{
+		Account: "PIM_TEST",
+		Type:    "union",
+	}
+	out, _ := xml.MarshalIndent(group, " ", "  ")
+
+	data := []byte(` <group type="union" account="PIM_TEST"></group>`)
+	if !reflect.DeepEqual(out, data) {
+		t.Errorf("Marshalling() = %v, want %v", out, data)
+	}
+
+}

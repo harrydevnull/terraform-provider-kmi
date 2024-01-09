@@ -23,7 +23,7 @@ terraform {
 
 
 provider "kmi" {
-  host      = "https://kdc-api.shared.qa.akamai.com"
+  host      = "https://kdc-api.shared.qa.akamai.com:11838"
   api_key   = "/Users/hachandr/Documents/work/kmi-k8/api_cert.key"
   api_crt   = "/Users/hachandr/Documents/work/kmi-k8/api_cert.crt"
   akamai_ca = "/Users/hachandr/Documents/work/kmi-k8/akamai_ca_list.pem"
@@ -61,18 +61,19 @@ provider "kmi" {
 # }
 
 
-# resource "kmi_group" "example" {
+resource "kmi_group" "group_name" {
 
-#   account_name = "PIM_TEST"
-#   group_name   = "somevalue"
-#   engine       = ""
-# }
-
-resource "kmi_collections" "collection" {
   account_name = "PIM_TEST"
-  adders       = "PIM_ADMIN"
-  modifiers    = "PIM_ADMIN"
-  readers      = "PIM_READERS"
-  name         = "testCollection"
-
+  group_name   = "kmiGrouptest"
+  engine       = "pi-dev-usiad-l1-2023-1127-121839"
+  workload_name = "instance_validator"
 }
+
+# resource "kmi_collections" "collection" {
+#   account_name = "PIM_TEST"
+#   adders       = "PIM_ADMIN"
+#   modifiers    = "PIM_ADMIN"
+#   readers      = "PIM_READERS"
+#   name         = "testCollection"
+
+# }

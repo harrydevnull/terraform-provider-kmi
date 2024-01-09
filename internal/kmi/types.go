@@ -144,3 +144,14 @@ type CollectionRequest struct {
 	Modifiers string   `xml:"modifiers"`
 	Readers   string   `xml:"readers"`
 }
+
+type KMIGroup struct {
+	XMLName   xml.Name `xml:"group"`
+	Text      string   `xml:",chardata"`
+	Name      string   `xml:"name,attr"`
+	Type      string   `xml:"type,attr"`
+	Source    string   `xml:"source,attr"`
+	Account   string   `xml:"account,attr"`
+	Adders    string   `xml:"adders"`
+	Modifiers string   `xml:"modifiers"`
+}
