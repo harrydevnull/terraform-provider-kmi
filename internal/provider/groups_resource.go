@@ -211,6 +211,7 @@ func (r *groupsResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 }
+
 func (r *groupsResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return

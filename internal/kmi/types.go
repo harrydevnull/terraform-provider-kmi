@@ -155,3 +155,39 @@ type KMIGroup struct {
 	Adders    string   `xml:"adders"`
 	Modifiers string   `xml:"modifiers"`
 }
+
+type KMIDefinition struct {
+	XMLName       xml.Name   `xml:"definition"`
+	Text          string     `xml:",chardata"`
+	Type          string     `xml:"type,attr"`
+	ExpirePeriod  string     `xml:"expire_period,omitempty"`
+	RefreshPeriod string     `xml:"refresh_period,omitempty"`
+	AutoGenerate  string     `xml:"auto_generate,omitempty"`
+	Option        *KMIOption `xml:"option"`
+}
+
+type KMIDefinitionResponse struct {
+	XMLName       xml.Name `xml:"definition"`
+	Text          string   `xml:",chardata"`
+	Name          string   `xml:"name,attr"`
+	Source        string   `xml:"source,attr"`
+	Type          string   `xml:"type,attr"`
+	Modified      string   `xml:"modified,attr"`
+	AutoGenerate  string   `xml:"auto_generate"`
+	ExpirePeriod  string   `xml:"expire_period"`
+	RefreshPeriod string   `xml:"refresh_period"`
+	Option        []struct {
+		Text   string `xml:",chardata"`
+		Name   string `xml:"name,attr"`
+		Source string `xml:"source,attr"`
+	} `xml:"option"`
+	Secret []struct {
+		Text  string `xml:",chardata"`
+		Index string `xml:"index,attr"`
+	} `xml:"secret"`
+}
+
+type kmigenerator interface {
+	IsEmpty() bool
+	RequestPayload() ([]byte, error)
+}
