@@ -23,7 +23,10 @@ func (client *KMIRestClient) GetWorkloadDetails(account string, engineName strin
 	var workload Workload
 	// we unmarshal our byteArray which contains our
 	// xmlFiles content into 'engine' which we defined above
-	xml.Unmarshal(responseData, &workload)
+	err = xml.Unmarshal(responseData, &workload)
+	if err != nil {
+		return nil, err
+	}
 
 	// we iterate through every user within o
 

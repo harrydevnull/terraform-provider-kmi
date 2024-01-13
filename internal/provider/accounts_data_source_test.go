@@ -22,12 +22,12 @@ import (
 // 	})
 // }
 
-const testAccExampleDataSourceConfig = `
+// const testAccExampleDataSourceConfig = `
 
- data "kmi_account" "example" {
-	    account_name = "PIM_TEST"
-}
-`
+//  data "kmi_account" "example" {
+// 	    account_name = "PIM_TEST"
+// }
+// `
 
 func TestAccountResourceSchema(t *testing.T) {
 	t.Parallel()

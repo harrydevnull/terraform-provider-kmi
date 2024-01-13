@@ -53,7 +53,10 @@ func (client *KMIRestClient) GetGroup(groupName string) (*KMIGroup, error) {
 	fmt.Println(string(responseData))
 
 	var kmiGroup KMIGroup
-	xml.Unmarshal(responseData, &kmiGroup)
+	err = xml.Unmarshal(responseData, &kmiGroup)
+	if err != nil {
+		return nil, err
+	}
 
 	return &kmiGroup, nil
 }

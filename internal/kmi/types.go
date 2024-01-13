@@ -188,6 +188,5 @@ type KMIDefinitionResponse struct {
 }
 
 type kmigenerator interface {
-	IsEmpty() bool
 	RequestPayload() ([]byte, error)
 }

@@ -37,19 +37,24 @@ func (r *collectionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"adders": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group. ",
 			},
 			"modifiers": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group. ",
 			},
 			"readers": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The group name of the admins who will read the collection  ",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the collection to create. ",
 			},
 			"account_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the account that KMI has been enabled for. ",
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,

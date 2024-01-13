@@ -5,13 +5,15 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"reflect"
 	"terraform-provider-kmi/internal/kmi"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -41,10 +43,12 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the definition to create. ",
 			},
 			"collection_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the collection to create. ",
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
@@ -52,10 +56,12 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"ssl_cert": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"auto_generate": schema.BoolAttribute{
-						Required: true,
+						Required:    true,
+						Description: "Auto generate the SSL certificate. ",
 					},
 				},
-				Optional: true,
+				Optional:    true,
+				Description: "The SSL certificate to create. ",
 			},
 			"azure_sp": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -63,10 +69,12 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required: true,
 					},
 				},
-				Optional: true,
+				Optional:    true,
+				Description: "The Azure Service Principal to create. ",
 			},
-			"option": schema.ListNestedAttribute{
-				Computed: true,
+			"options": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "The list of options for the definition. ",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -79,26 +87,30 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 				},
 			},
 			"opaque": schema.StringAttribute{
-
-				Optional: true,
+				Optional:    true,
+				Description: "The Opaque definition to create. ",
 			},
 			"secret_indexes": schema.StringAttribute{
-
-				Computed: true,
+				Computed:    true,
+				Description: "The list of secret indexes for the definition. ",
 			},
 			"symmetric_key": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"auto_generate": schema.BoolAttribute{
-						Required: true,
+						Required:    true,
+						Description: "Auto generate the symmetric key. ",
 					},
-					"expire_period": schema.Int64Attribute{
-						Required: true,
+					"expire_period": schema.StringAttribute{
+						Required:    true,
+						Description: "The expire period for the symmetric key. ",
 					},
-					"refresh_period": schema.Int64Attribute{
-						Required: true,
+					"refresh_period": schema.StringAttribute{
+						Required:    true,
+						Description: "The refresh period for the symmetric key. ",
 					},
 					"key_size_bytes": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "The key size in bytes for the symmetric key. ",
 					},
 				},
 				Optional: true,
@@ -117,18 +129,23 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	var err error
-	if !plan.SSLCert.IsEmpty() {
+	if plan.SSLCert != nil {
+		tflog.Info(ctx, "SSl cert is not nil")
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
 	}
-	if !plan.SymetricKey.IsEmpty() {
+	if plan.SymetricKey != nil {
+		tflog.Info(ctx, "Symetric key is not nil")
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SymetricKey)
 	}
-	if !plan.AzureSP.IsEmpty() {
+	if plan.AzureSP != nil {
+		tflog.Info(ctx, "Azure SP is not nil")
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.AzureSP)
 	}
 
-	if !plan.Opaque.IsEmpty() {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.Opaque)
+	if !plan.Opaque.IsNull() {
+		op := Opaque{}
+		tflog.Info(ctx, "Opaque is not nil")
+		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), op)
 	}
 
 	if err != nil {
@@ -148,15 +165,17 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 		)
 		return
 	}
-	plan.Options = []DefinitionOption{}
+	options := []DefinitionOption{}
 
 	for _, optionfromKmi := range definitionDetails.Option {
 
-		plan.Options = append(plan.Options, DefinitionOption{
+		options = append(options, DefinitionOption{
 			Name:  types.StringValue(optionfromKmi.Name),
 			Value: types.StringValue(optionfromKmi.Text),
 		})
 	}
+
+	plan.Options = keySliceToList(ctx, options, &resp.Diagnostics)
 	var secretsIndex bytes.Buffer
 	for _, secret := range definitionDetails.Secret {
 		secretsIndex.WriteString(fmt.Sprintf("%s,", secret.Index))
@@ -189,15 +208,16 @@ func (r *definitionsResource) Read(ctx context.Context, req resource.ReadRequest
 		)
 		return
 	}
-	state.Options = []DefinitionOption{}
+	options := []DefinitionOption{}
 
 	for _, optionfromKmi := range definitionDetails.Option {
 
-		state.Options = append(state.Options, DefinitionOption{
+		options = append(options, DefinitionOption{
 			Name:  types.StringValue(optionfromKmi.Name),
 			Value: types.StringValue(optionfromKmi.Text),
 		})
 	}
+	state.Options = keySliceToList(ctx, options, &resp.Diagnostics)
 	var secretsIndex bytes.Buffer
 	for _, secret := range definitionDetails.Secret {
 		secretsIndex.WriteString(fmt.Sprintf("%s,", secret.Index))
@@ -223,18 +243,18 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	var err error
-	if !plan.SSLCert.IsEmpty() {
+	if plan.SSLCert != nil {
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
 	}
-	if !plan.SymetricKey.IsEmpty() {
+	if plan.SymetricKey != nil {
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SymetricKey)
 	}
-	if !plan.AzureSP.IsEmpty() {
+	if plan.AzureSP != nil {
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.AzureSP)
 	}
 
-	if !plan.Opaque.IsEmpty() {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.Opaque)
+	if !plan.Opaque.IsNull() {
+		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), Opaque{})
 	}
 
 	if err != nil {
@@ -254,15 +274,17 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 		)
 		return
 	}
-	plan.Options = []DefinitionOption{}
+	options := []DefinitionOption{}
 
 	for _, optionfromKmi := range definitionDetails.Option {
 
-		plan.Options = append(plan.Options, DefinitionOption{
+		options = append(options, DefinitionOption{
 			Name:  types.StringValue(optionfromKmi.Name),
 			Value: types.StringValue(optionfromKmi.Text),
 		})
 	}
+
+	plan.Options = keySliceToList(ctx, options, &resp.Diagnostics)
 	var secretsIndex bytes.Buffer
 	for _, secret := range definitionDetails.Secret {
 		secretsIndex.WriteString(fmt.Sprintf("%s,", secret.Index))
@@ -317,7 +339,7 @@ func (r *definitionsResource) Configure(_ context.Context, req resource.Configur
 	r.client = client
 }
 
-// I feel like throwing up writing this function
+// I feel like throwing up writing this function.
 func boolStr(s bool) string {
 	if s {
 		return "True"
@@ -327,41 +349,48 @@ func boolStr(s bool) string {
 }
 
 type definitionResourceModel struct {
-	DefinitionName types.String       `tfsdk:"name"`
-	CollectionName types.String       `tfsdk:"collection_name"`
-	LastUpdated    types.String       `tfsdk:"last_updated"`
-	SSLCert        SSLCert            `tfsdk:"ssl_cert"`
-	AzureSP        AzureSP            `tfsdk:"azure_sp"`
-	Opaque         Opaque             `tfsdk:"opaque"`
-	SymetricKey    SymetricKey        `tfsdk:"symmetric_key"`
-	Options        []DefinitionOption `tfsdk:"option"`
-	SecretIndexes  types.String       `tfsdk:"secret_indexes"`
+	DefinitionName types.String `tfsdk:"name"`
+	CollectionName types.String `tfsdk:"collection_name"`
+	LastUpdated    types.String `tfsdk:"last_updated"`
+	SSLCert        *SSLCert     `tfsdk:"ssl_cert"`
+	AzureSP        *AzureSP     `tfsdk:"azure_sp"`
+	Opaque         types.String `tfsdk:"opaque"`
+	SymetricKey    *SymetricKey `tfsdk:"symmetric_key"`
+	Options        types.List   `tfsdk:"options"`
+	SecretIndexes  types.String `tfsdk:"secret_indexes"`
 }
 
 type DefinitionOption struct {
 	Name  types.String `tfsdk:"name"`
 	Value types.String `tfsdk:"value"`
 }
-type Opaque struct {
+
+func (o DefinitionOption) attrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":  types.StringType,
+		"value": types.StringType,
+	}
 }
 
-func (op Opaque) IsEmpty() bool {
-	return reflect.DeepEqual(op, Opaque{})
+func keySliceToList(ctx context.Context, keysSliceIn []DefinitionOption, diags *diag.Diagnostics) types.List {
+	keys, d := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: DefinitionOption{}.attrTypes()}, keysSliceIn)
+	diags.Append(d...)
+	return keys
+}
+
+type Opaque struct {
 }
 
 func (op Opaque) RequestPayload() ([]byte, error) {
 	defn := kmi.KMIDefinition{
 		Type: "opaque",
 	}
-	return xml.MarshalIndent(defn, " ", "  ")
+	return xml.MarshalIndent(defn, "", "")
+	//return xml.MarshalIndent(defn, " ", "  ")
 }
 
 type SSLCert struct {
 	AutoGenerate types.Bool `tfsdk:"auto_generate"`
-}
-
-func (s SSLCert) IsEmpty() bool {
-	return reflect.DeepEqual(s, SSLCert{})
 }
 
 func (s SSLCert) RequestPayload() ([]byte, error) {
@@ -387,19 +416,11 @@ func (sp AzureSP) RequestPayload() ([]byte, error) {
 
 }
 
-func (s AzureSP) IsEmpty() bool {
-	return reflect.DeepEqual(s, AzureSP{})
-}
-
 type SymetricKey struct {
 	AutoGenerate  types.Bool   `tfsdk:"auto_generate"`
 	ExpiryPeriod  types.String `tfsdk:"expire_period"`
 	RefreshPeriod types.String `tfsdk:"refresh_period"`
 	KeySizeBytes  types.Int64  `tfsdk:"key_size_bytes"`
-}
-
-func (s SymetricKey) IsEmpty() bool {
-	return reflect.DeepEqual(s, SymetricKey{})
 }
 
 func (sk SymetricKey) RequestPayload() ([]byte, error) {

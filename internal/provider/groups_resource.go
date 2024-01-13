@@ -38,25 +38,32 @@ func (r *groupsResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"group_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the group to create. ",
 			},
 			"workload_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the workload to add to the group. ",
 			},
 			"engine": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The Identity engine of the workload to add to the group. ",
 			},
 			"account_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the account that KMI has been enabled for. ",
 			},
 			"adders": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The list of adders for the group. ",
 			},
 			"modifiers": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The list of modifiers for the group. ",
 			},
 			"last_updated": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The last time the group was updated. ",
 			},
 		},
 	}

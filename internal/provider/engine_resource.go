@@ -40,16 +40,20 @@ func (r *engineResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"engine": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: " Authentication engine name to be created on KMI ",
 			},
 			"account_name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of the account has been created on KMI ",
 			},
 			"api_endpoint": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The Kuberenetes API endpoint of the Kuberenetes cluster has been created on KMI ",
 			},
 			"cas_base64": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The base64 encoded certificate authority of the Kuberenetes cluster has been created on KMI ",
 			},
 			"source": schema.StringAttribute{
 				Optional: true,
@@ -58,20 +62,25 @@ func (r *engineResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Computed: true,
 			},
 			"workloads": schema.ListNestedAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The list of workloads has been created on KMI ",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The name of the workload has been created on KMI ",
 						},
 						"serviceaccount": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The Kubernetes service account ",
 						},
 						"namespace": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The Kubernetes namespace to which workload belongs to ",
 						},
 						"region": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The Linode region to which cluster belongs to curl -s https://api.linode.com/v4/regions/ | jq .data[].id ",
 						},
 						"kubernetes_service_account": schema.StringAttribute{
 							Computed: true,
@@ -394,7 +403,6 @@ type EngineResourceModel struct {
 	LastUpdated              types.String            `tfsdk:"last_updated"`
 }
 
-// Name            types.String `tfsdk:"name"`
 type WorkloadResourceModel struct {
 	Name                     types.String `tfsdk:"name"`
 	KubernetesServiceAccount types.String `tfsdk:"kubernetes_service_account"`

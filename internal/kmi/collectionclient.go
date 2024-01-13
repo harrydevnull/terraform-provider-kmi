@@ -52,6 +52,9 @@ func (client *KMIRestClient) GetCollection(collectionName string) (*Collection, 
 	}
 
 	var collectionDetails Collection
-	xml.Unmarshal(responseData, &collectionDetails)
+	err = xml.Unmarshal(responseData, &collectionDetails)
+	if err != nil {
+		return nil, err
+	}
 	return &collectionDetails, nil
 }

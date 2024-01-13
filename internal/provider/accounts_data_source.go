@@ -36,28 +36,33 @@ func (d *accountDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"account_name": schema.StringAttribute{
-				Description: "Identifier for this KMI account.",
 				Required:    true,
+				Description: "The name of the account that KMI has been enabled for. ",
 			},
 			"engines": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The name of the engine. ",
 						},
 
 						"cloud": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The cloud type of the engine.  azure, gcp, or linode ",
 						},
 						"adders": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The group name of the admins who will manage the engine permissions. This can be set to the KMI account admin group. ",
 						},
 						"modifiers": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The group name of the admins who will manage the engine permissions. This can be set to the KMI account admin group. ",
 						},
 						"modified": schema.Int64Attribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The last time the engine was modified. ",
 						},
 						"source": schema.StringAttribute{
 							Computed: true,
@@ -76,34 +81,43 @@ func (d *accountDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The name of the collection. ",
 						},
 						"source": schema.StringAttribute{
 							Computed: true,
 						},
 						"readers": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The group name of the admins who will read the collection  ",
 						},
 						"adders": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group. ",
 						},
 						"modifiers": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group. ",
 						},
 						"modified": schema.Int64Attribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The last time the collection was modified. ",
 						},
 						"distributed": schema.Int64Attribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The last time the collection was modified. ",
 						},
 						"distributed_date": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The last time the collection was modified. ",
 						},
 						"keyspace": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The last time the collection was modified. ",
 						},
 						"account": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The account the collection belongs to. ",
 						},
 					},
 				},
@@ -113,22 +127,27 @@ func (d *accountDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The name of the group. ",
 						},
 						"type": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The type of the group. ",
 						},
 						"source": schema.StringAttribute{
 							Computed: true,
 						},
 						"account": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The account the group belongs to. ",
 						},
 						"engine": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The engine the group belongs to. ",
 						},
 						"projection": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The name of the identity projection",
 						},
 					},
 				},

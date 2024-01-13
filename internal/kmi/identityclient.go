@@ -41,7 +41,10 @@ func (client *KMIRestClient) GetIdentityEngine(account string, engineName string
 	var engine IdentityEngine
 	// we unmarshal our byteArray which contains our
 	// xmlFiles content into 'engine' which we defined above
-	xml.Unmarshal(responseData, &engine)
+	err = xml.Unmarshal(responseData, &engine)
+	if err != nil {
+		return nil, err
+	}
 
 	// we iterate through every user within o
 

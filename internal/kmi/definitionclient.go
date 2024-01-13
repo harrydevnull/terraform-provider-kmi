@@ -9,17 +9,26 @@ import (
 )
 
 func (client *KMIRestClient) CreateDefinition(collectionName string, definitionName string, kmigenerator kmigenerator) error {
-	idenityengineurl := fmt.Sprintf("%s/Col=%s/Def=%s", client.Host, collectionName, definitionName)
-
+	idenityengineurl := fmt.Sprintf("%s/definition/Col=%s/Def=%s", client.Host, collectionName, definitionName)
+	fmt.Println(idenityengineurl)
 	out, err := kmigenerator.RequestPayload()
+	fmt.Printf("CreateDefinition payload %v\n", string(out))
 	if err != nil {
 		return err
 	}
 
-	_, err = client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
+	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
+
 	if err != nil {
+		fmt.Printf("error while calling CreateDefinition api  %s\n", err.Error())
 		return err
 	}
+	defer resp.Body.Close()
+	// go write error handling code for 200
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("error while calling CreateDefinition api  %s and payload is %v", resp.Status, resp)
+	}
+
 	return nil
 }
 
@@ -52,6 +61,9 @@ func (client *KMIRestClient) GetDefinition(collectionName string, definitionName
 	}
 
 	var responseDetails KMIDefinitionResponse
-	xml.Unmarshal(responseData, &responseDetails)
+	err = xml.Unmarshal(responseData, &responseDetails)
+	if err != nil {
+		return nil, err
+	}
 	return &responseDetails, nil
 }

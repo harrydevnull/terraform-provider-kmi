@@ -17,7 +17,7 @@ func Test_AccountMarshalling(t *testing.T) {
 		log.Fatal(err)
 	}
 	var e1 Account
-	err = xml.Unmarshal([]byte(data), &e1)
+	err = xml.Unmarshal(data, &e1)
 	if err != nil {
 		log.Fatal(err)
 	}

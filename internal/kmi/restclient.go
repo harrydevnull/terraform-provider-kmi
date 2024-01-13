@@ -45,6 +45,7 @@ func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string
 	return &KMIRestClient{Host: host, ApiKey: apiKey, ApiCrt: apiCrt, AkamaiCA: akamaiCA, httpclient: client}, nil
 }
 
+// GetAccountDetails returns the account details for the given account.
 func (client *KMIRestClient) GetAccountDetails(account string) (*Account, error) {
 
 	idenityengineurl := fmt.Sprintf("%s/account/Acct=%s/children", client.Host, account)
@@ -61,7 +62,10 @@ func (client *KMIRestClient) GetAccountDetails(account string) (*Account, error)
 	var accountEngines Account
 	// we unmarshal our byteArray which contains our
 	// xmlFiles content into 'engine' which we defined above
-	xml.Unmarshal(responseData, &accountEngines)
+	err = xml.Unmarshal(responseData, &accountEngines)
+	if err != nil {
+		return nil, err
+	}
 
 	// we iterate through every user within o
 
