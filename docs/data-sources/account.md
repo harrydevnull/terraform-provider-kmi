@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `account_name` (String) Identifier for this KMI account.
+- `account_name` (String) The name of the account that KMI has been enabled for.
 
 ### Read-Only
 
@@ -30,15 +30,15 @@ description: |-
 
 Read-Only:
 
-- `account` (String)
-- `adders` (String)
-- `distributed` (Number)
-- `distributed_date` (String)
-- `keyspace` (String)
-- `modified` (Number)
-- `modifiers` (String)
-- `name` (String)
-- `readers` (String)
+- `account` (String) The account the collection belongs to.
+- `adders` (String) The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group.
+- `distributed` (Number) The last time the collection was modified.
+- `distributed_date` (String) The last time the collection was modified.
+- `keyspace` (String) The last time the collection was modified.
+- `modified` (Number) The last time the collection was modified.
+- `modifiers` (String) The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group.
+- `name` (String) The name of the collection.
+- `readers` (String) The group name of the admins who will read the collection
 - `source` (String)
 
 
@@ -47,11 +47,11 @@ Read-Only:
 
 Read-Only:
 
-- `adders` (String)
-- `cloud` (String)
-- `modified` (Number)
-- `modifiers` (String)
-- `name` (String)
+- `adders` (String) The group name of the admins who will manage the engine permissions. This can be set to the KMI account admin group.
+- `cloud` (String) The cloud type of the engine.  azure, gcp, or linode
+- `modified` (Number) The last time the engine was modified.
+- `modifiers` (String) The group name of the admins who will manage the engine permissions. This can be set to the KMI account admin group.
+- `name` (String) The name of the engine.
 - `published` (String)
 - `published_location` (String)
 - `source` (String)
@@ -62,9 +62,9 @@ Read-Only:
 
 Read-Only:
 
-- `account` (String)
-- `engine` (String)
-- `name` (String)
-- `projection` (String)
+- `account` (String) The account the group belongs to.
+- `engine` (String) The engine the group belongs to.
+- `name` (String) The name of the group.
+- `projection` (String) The name of the identity projection
 - `source` (String)
-- `type` (String)
+- `type` (String) The type of the group.

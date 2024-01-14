@@ -17,13 +17,13 @@ description: |-
 
 ### Required
 
-- `account_name` (String)
-- `engine` (String)
-- `group_name` (String)
-- `workload_name` (String)
+- `account_name` (String) The name of the account that KMI has been enabled for.
+- `engine` (String) The Identity engine of the workload to add to the group.
+- `group_name` (String) The name of the group to create.
+- `workload_name` (String) The name of the workload to add to the group.
 
 ### Read-Only
 
-- `adders` (String)
-- `last_updated` (String)
-- `modifiers` (String)
+- `adders` (String) The list of adders for the group.
+- `last_updated` (String) The last time the group was updated.
+- `modifiers` (String) The list of modifiers for the group.

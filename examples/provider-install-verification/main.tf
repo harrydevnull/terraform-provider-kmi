@@ -12,14 +12,8 @@ terraform {
 }
 
 provider "linode" {
-  token = 
+  token = "84395df1bee3c8e6ddf78033908e3e48c332169967e0b265248f7b79877dcb2d"
 }
-
-# data "linode_lke_cluster" "cluster" {
-#   id = 143738
-# }
-
-
 
 
 provider "kmi" {

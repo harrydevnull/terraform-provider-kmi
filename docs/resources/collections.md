@@ -17,11 +17,11 @@ description: |-
 
 ### Required
 
-- `account_name` (String)
-- `adders` (String)
-- `modifiers` (String)
-- `name` (String)
-- `readers` (String)
+- `account_name` (String) The name of the account that KMI has been enabled for.
+- `adders` (String) The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group.
+- `modifiers` (String) The group name of the admins who will manage the collection permissions. This can be set to the KMI account admin group.
+- `name` (String) The name of the collection to create.
+- `readers` (String) The group name of the admins who will read the collection
 
 ### Read-Only
 

@@ -17,11 +17,11 @@ description: |-
 
 ### Required
 
-- `account_name` (String)
-- `api_endpoint` (String)
-- `cas_base64` (String)
-- `engine` (String)
-- `workloads` (Attributes List) (see [below for nested schema](#nestedatt--workloads))
+- `account_name` (String) The name of the account has been created on KMI
+- `api_endpoint` (String) The Kuberenetes API endpoint of the Kuberenetes cluster has been created on KMI
+- `cas_base64` (String) The base64 encoded certificate authority of the Kuberenetes cluster has been created on KMI
+- `engine` (String) Authentication engine name to be created on KMI
+- `workloads` (Attributes List) The list of workloads has been created on KMI (see [below for nested schema](#nestedatt--workloads))
 
 ### Optional
 
@@ -36,10 +36,10 @@ description: |-
 
 Required:
 
-- `name` (String)
-- `namespace` (String)
-- `region` (String)
-- `serviceaccount` (String)
+- `name` (String) The name of the workload has been created on KMI
+- `namespace` (String) The Kubernetes namespace to which workload belongs to
+- `region` (String) The Linode region to which cluster belongs to curl -s https://api.linode.com/v4/regions/ | jq .data[].id
+- `serviceaccount` (String) The Kubernetes service account
 
 Read-Only:
 
