@@ -36,7 +36,6 @@ func (client *KMIRestClient) GetIdentityEngine(account string, engineName string
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(responseData))
 
 	var engine IdentityEngine
 	// we unmarshal our byteArray which contains our

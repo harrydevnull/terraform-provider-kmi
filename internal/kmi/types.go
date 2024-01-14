@@ -190,3 +190,12 @@ type KMIDefinitionResponse struct {
 type kmigenerator interface {
 	RequestPayload() ([]byte, error)
 }
+
+type OpaqueSecret struct {
+	XMLName xml.Name `xml:"secret"`
+	Text    string   `xml:",chardata"`
+	Block   struct {
+		Text string `xml:",chardata"`
+		Name string `xml:"name,attr"`
+	} `xml:"block"`
+}

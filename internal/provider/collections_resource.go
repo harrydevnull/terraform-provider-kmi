@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/xml"
 	"fmt"
 	"terraform-provider-kmi/internal/kmi"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -77,7 +79,10 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 		Readers:   plan.Readers.ValueString(),
 	}
 
-	err := r.client.CreateCollection(plan.AccountName.ValueString(), plan.CollectionName.ValueString(), collection)
+	out, err := xml.MarshalIndent(collection, "", "")
+
+	tflog.Info(ctx, fmt.Sprintf("Creating Collection: %s", string(out)))
+	err = r.client.CreateCollection(plan.AccountName.ValueString(), plan.CollectionName.ValueString(), collection)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Collection",
@@ -86,7 +91,7 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	_, err = r.client.GetCollection(plan.CollectionName.ValueString())
+	// response, err = r.client.GetCollection(plan.CollectionName.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError(

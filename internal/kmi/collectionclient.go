@@ -2,10 +2,13 @@ package kmi
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func (client *KMIRestClient) CreateCollection(account string, collectionName string, collection CollectionRequest) error {
@@ -15,10 +18,15 @@ func (client *KMIRestClient) CreateCollection(account string, collectionName str
 	if err != nil {
 		return err
 	}
-
-	_, err = client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
+	tflog.Info(context.Background(), "CreateCollection payload %v\n"+string(out))
+	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
 	if err != nil {
 		return err
+	}
+	defer resp.Body.Close()
+	// go write error handling code for 200
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling CreateCollection api  %s and payload is %v", resp.Status, resp)
 	}
 	return nil
 }

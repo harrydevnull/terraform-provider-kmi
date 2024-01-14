@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"regexp"
 	"terraform-provider-kmi/internal/kmi"
 	"time"
 
@@ -131,6 +132,7 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 	var err error
 	if plan.SSLCert != nil {
 		tflog.Info(ctx, "SSl cert is not nil")
+
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
 	}
 	if plan.SymetricKey != nil {
@@ -139,6 +141,21 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 	}
 	if plan.AzureSP != nil {
 		tflog.Info(ctx, "Azure SP is not nil")
+
+		if !regexp.MustCompile(`^[a-z0-9_\-]+$`).MatchString(plan.CollectionName.ValueString()) {
+			resp.Diagnostics.AddError(
+				"Validation error",
+				"Collection name should only contain lower case for Azure SP  ",
+			)
+			return
+		}
+		if !regexp.MustCompile(`^[a-z0-9_\-]+$`).MatchString(plan.DefinitionName.ValueString()) {
+			resp.Diagnostics.AddError(
+				"Validation error",
+				"DefinitionName should only contain lower case for Azure SP  ",
+			)
+			return
+		}
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.AzureSP)
 	}
 
@@ -255,6 +272,29 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 
 	if !plan.Opaque.IsNull() {
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), Opaque{})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Definition",
+				"Could not create Definition, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		err = r.client.CreateOpaueSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.OpaqueSecret{
+			Block: struct {
+				Text string "xml:\",chardata\""
+				Name string "xml:\"name,attr\""
+			}{
+				Name: "opaque",
+				Text: plan.Opaque.ValueString(),
+			},
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Opaque Secret",
+				"Could not create Opaue Secret, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	if err != nil {

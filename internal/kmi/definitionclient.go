@@ -20,15 +20,37 @@ func (client *KMIRestClient) CreateDefinition(collectionName string, definitionN
 	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
 
 	if err != nil {
-		fmt.Printf("error while calling CreateDefinition api  %s\n", err.Error())
+		fmt.Printf("error while calling CreateDefinition api posting  %s\n", err.Error())
 		return err
 	}
 	defer resp.Body.Close()
 	// go write error handling code for 200
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("error while calling CreateDefinition api  %s and payload is %v", resp.Status, resp)
 	}
 
+	return nil
+}
+
+func (client *KMIRestClient) CreateOpaueSecret(collectionName string, definitionName string, opaque OpaqueSecret) error {
+	idenityengineurl := fmt.Sprintf("%s/secret/Col=%s/Def=%s/Idx=AUTOINDEX", client.Host, collectionName, definitionName)
+	fmt.Println(idenityengineurl)
+
+	out, err := xml.MarshalIndent(opaque, " ", "  ")
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
+
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling CreateDefinition CreateOpaueSecret api  %s and payload is %v", resp.Status, resp)
+	}
 	return nil
 }
 
