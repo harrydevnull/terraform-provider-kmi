@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "linode" {
-  token = ""
+  config_profile = "dev"
 }
 
 
@@ -138,46 +138,46 @@ output "collection_output" {
   value = kmi_collections.collection
 }
 
-# resource "kmi_definitions" "defn" {
-#   name            = local.definition_name
-#   collection_name = local.collection_name
-#   opaque = jsonencode({
-#     "username" = "bob"
-#     "password" = "pass123"
-#   })
+resource "kmi_definitions" "defn" {
+  name            = local.definition_name
+  collection_name = local.collection_name
+  opaque = jsonencode({
+    "username" = "bob"
+    "password" = "pass123"
+  })
 
-#   depends_on = [ kmi_collections.collection ]
-# }
+  depends_on = [kmi_collections.collection]
+}
 
-# resource "kmi_definitions" "ssl_defn" {
-#   name            = local.ssl_cert_definition_name
-#   collection_name = local.collection_name
-#   ssl_cert = {
-#     "auto_generate" = true
-#   }
-#   depends_on = [ kmi_collections.collection ]
-# }
-# resource "kmi_definitions" "az_defn" {
-#   name            = local.azure_sp_definition_name
-#   collection_name = local.collection_name
-#   azure_sp = {
-#     "auto_generate" = true
-#   }
-# depends_on = [ kmi_collections.collection ]
-# }
+resource "kmi_definitions" "ssl_defn" {
+  name            = local.ssl_cert_definition_name
+  collection_name = local.collection_name
+  ssl_cert = {
+    "auto_generate" = true
+  }
+  depends_on = [kmi_collections.collection]
+}
+resource "kmi_definitions" "az_defn" {
+  name            = local.azure_sp_definition_name
+  collection_name = local.collection_name
+  azure_sp = {
+    "auto_generate" = true
+  }
+  depends_on = [kmi_collections.collection]
+}
 
-# resource "kmi_definitions" "symetric_defn" {
-#   name            = local.symetric_key_definition_name
-#   collection_name = local.collection_name
-#   symmetric_key = {
-#     "auto_generate"  = true
-#     "key_size_bytes" = 16
-#     "expire_period"  = "3 months"
-#     "refresh_period" = "1 month"
+resource "kmi_definitions" "symetric_defn" {
+  name            = local.symetric_key_definition_name
+  collection_name = local.collection_name
+  symmetric_key = {
+    "auto_generate"  = true
+    "key_size_bytes" = 16
+    "expire_period"  = "3 months"
+    "refresh_period" = "1 month"
 
-#   }
-#   depends_on = [ kmi_collections.collection ]
-# }
+  }
+  depends_on = [kmi_collections.collection]
+}
 
 output "definitions_output" {
   value = kmi_definitions.symetric_defn
