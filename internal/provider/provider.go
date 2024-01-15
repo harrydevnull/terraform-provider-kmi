@@ -216,6 +216,7 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *kmiProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAccountDataSource,
+		NewCollectionsDataSource,
 	}
 }
 
