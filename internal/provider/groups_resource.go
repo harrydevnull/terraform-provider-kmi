@@ -41,14 +41,7 @@ func (r *groupsResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Required:    true,
 				Description: "The name of the group to create. ",
 			},
-			"workload_name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the workload to add to the group. ",
-			},
-			"engine": schema.StringAttribute{
-				Required:    true,
-				Description: "The Identity engine of the workload to add to the group. ",
-			},
+
 			"account_name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the account that KMI has been enabled for. ",
@@ -84,15 +77,6 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.AddError(
 			"Error creating Group",
 			"Could not create order, unexpected error: "+err.Error(),
-		)
-		return
-	}
-
-	err = r.client.CreateGroupMembership(plan.AccountName.ValueString(), plan.GroupName.ValueString(), plan.Engine.ValueString(), plan.WorkloadName.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating Group",
-			"Could not create Group, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -168,15 +152,6 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	err = r.client.CreateGroupMembership(plan.AccountName.ValueString(), plan.GroupName.ValueString(), plan.Engine.ValueString(), plan.WorkloadName.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating Group",
-			"Could not create Group, unexpected error: "+err.Error(),
-		)
-		return
-	}
-
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	groupInfo, err := r.client.GetGroup(plan.GroupName.ValueString())
@@ -239,11 +214,9 @@ func (r *groupsResource) Configure(_ context.Context, req resource.ConfigureRequ
 }
 
 type groupResourceModel struct {
-	AccountName  types.String `tfsdk:"account_name"`
-	GroupName    types.String `tfsdk:"group_name"`
-	WorkloadName types.String `tfsdk:"workload_name"`
-	Engine       types.String `tfsdk:"engine"`
-	Adders       types.String `tfsdk:"adders"`
-	Modifiers    types.String `tfsdk:"modifiers"`
-	LastUpdated  types.String `tfsdk:"last_updated"`
+	AccountName types.String `tfsdk:"account_name"`
+	GroupName   types.String `tfsdk:"group_name"`
+	Adders      types.String `tfsdk:"adders"`
+	Modifiers   types.String `tfsdk:"modifiers"`
+	LastUpdated types.String `tfsdk:"last_updated"`
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -24,9 +25,13 @@ func (client *KMIRestClient) CreateCollection(account string, collectionName str
 		return err
 	}
 	defer resp.Body.Close()
+	b, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		return err
+	}
 	// go write error handling code for 200
 	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("error while calling CreateCollection api  %s and payload is %v", resp.Status, resp)
+		return fmt.Errorf("error while calling CreateCollection api  %s and payload is %v", resp.Status, string(b))
 	}
 	return nil
 }

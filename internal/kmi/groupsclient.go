@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 )
 
 func (client *KMIRestClient) CreateGroup(account string, groupName string) error {
@@ -25,18 +26,36 @@ func (client *KMIRestClient) CreateGroup(account string, groupName string) error
 		return err
 	}
 	defer resp.Body.Close()
-	return nil
-}
-
-func (client *KMIRestClient) CreateGroupMembership(account string, groupName string, engineName string, workloadName string) error {
-	idenityengineurl := fmt.Sprintf("%s/group_membership/Parent=%s/Child=workload:%s:%s:%s", client.Host, groupName, account, engineName, workloadName)
-
-	data := []byte(`<group_membership/>`)
-	_, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(data))
+	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		return err
 	}
+	// go write error handling code for 200
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling CreateGroup api  %s and payload is %v", resp.Status, string(b))
+	}
 	return nil
+}
+
+func (client *KMIRestClient) CreateGroupMembership(groupName string, child string) error {
+	idenityengineurl := fmt.Sprintf("%s/group_membership/Parent=%s/Child=%s", client.Host, groupName, child)
+
+	data := []byte(`<group_membership/>`)
+	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		return err
+	}
+	// go write error handling code for 200
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling CreateGroupMembership api  %s and payload is %v", resp.Status, string(b))
+	}
+	return nil
+
 }
 
 func (client *KMIRestClient) GetGroup(groupName string) (*KMIGroup, error) {

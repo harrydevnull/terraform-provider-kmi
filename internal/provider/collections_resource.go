@@ -61,6 +61,9 @@ func (r *collectionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"last_updated": schema.StringAttribute{
 				Computed: true,
 			},
+			"distributed_date": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 	}
 }
@@ -73,6 +76,15 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	_, err := r.client.GetGroup(plan.Readers.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Getting Reader Group on Collection Create",
+			"Could not get reader group, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
 	collection := kmi.CollectionRequest{
 		Adders:    plan.Adders.ValueString(),
 		Modifiers: plan.Modifiers.ValueString(),
@@ -80,6 +92,13 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	out, err := xml.MarshalIndent(collection, "", "")
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Marshalling Collection",
+			"Could not marshal collection, unexpected error: "+err.Error(),
+		)
+		return
+	}
 
 	tflog.Info(ctx, fmt.Sprintf("Creating Collection: %s", string(out)))
 	err = r.client.CreateCollection(plan.AccountName.ValueString(), plan.CollectionName.ValueString(), collection)
@@ -91,7 +110,10 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	var duration_Minute time.Duration = 2 * time.Minute
+
 	// response, err = r.client.GetCollection(plan.CollectionName.ValueString())
+	response, err := retry(5, duration_Minute, func() (*kmi.Collection, error) { return r.client.GetCollection(plan.CollectionName.ValueString()) })
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -101,9 +123,11 @@ func (r *collectionsResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	plan.DistributedDate = types.StringValue(response.DistributedDate)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	// Set state to fully populated data
+
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -232,10 +256,11 @@ func (r *collectionsResource) Configure(_ context.Context, req resource.Configur
 }
 
 type collectionResourceModel struct {
-	Adders         types.String `tfsdk:"adders"`
-	Modifiers      types.String `tfsdk:"modifiers"`
-	Readers        types.String `tfsdk:"readers"`
-	CollectionName types.String `tfsdk:"name"`
-	AccountName    types.String `tfsdk:"account_name"`
-	LastUpdated    types.String `tfsdk:"last_updated"`
+	Adders          types.String `tfsdk:"adders"`
+	Modifiers       types.String `tfsdk:"modifiers"`
+	Readers         types.String `tfsdk:"readers"`
+	CollectionName  types.String `tfsdk:"name"`
+	AccountName     types.String `tfsdk:"account_name"`
+	LastUpdated     types.String `tfsdk:"last_updated"`
+	DistributedDate types.String `tfsdk:"distributed_date"`
 }

@@ -159,8 +159,18 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 
 		kmiserviceAcc := kmiprojection.KubernetesServiceAccount.Text
-		k8ServiceAccount := strings.Split(kmiserviceAcc, ":")[3]
-		k8Namepace := strings.Split(kmiserviceAcc, ":")[2]
+		tflog.Debug(ctx, "After Saving Identity engine %s"+kmiserviceAcc)
+		serviceAccSlic := strings.Split(kmiserviceAcc, ":")
+		var k8ServiceAccount = "UNKNOWN"
+		var k8Namepace = "UNKNOWN"
+
+		if len(serviceAccSlic) > 3 {
+
+			k8ServiceAccount = serviceAccSlic[3]
+			k8Namepace = serviceAccSlic[2]
+			tflog.Debug(ctx, "Service Account Slice "+k8ServiceAccount+" :"+k8Namepace)
+		}
+
 		wrkmodel := WorkloadResourceModel{
 			Name:                     types.StringValue(kmiprojection.Projection),
 			KubernetesServiceAccount: types.StringValue(kmiserviceAcc),

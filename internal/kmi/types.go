@@ -60,7 +60,6 @@ type Account struct {
 	} `xml:"engine"`
 }
 
-// Engine was generated 2024-01-03 23:13:49 by https://xml-to-go.github.io/ in Ukraine.
 type IdentityEngine struct {
 	XMLName           xml.Name `xml:"engine"`
 	Text              string   `xml:",chardata"`
