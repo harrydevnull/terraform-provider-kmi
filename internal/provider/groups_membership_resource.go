@@ -43,11 +43,19 @@ func (r *groupsMembershipResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "The name of the group to create. ",
 			},
 
-			"members": schema.SetAttribute{
-				ElementType: types.ListType{
-					ElemType: types.StringType,
-				},
+			"last_updated": schema.StringAttribute{
+				Computed:    true,
+				Description: "The last time the group was updated. ",
+			},
+			"members": schema.ListNestedAttribute{
 				Required: true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Required: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -65,13 +73,8 @@ func (r *groupsMembershipResource) Create(ctx context.Context, req resource.Crea
 
 	var errstrings []string
 
-	elements := make([]types.String, 0, len(plan.Members.Elements()))
-	diags = plan.Members.ElementsAs(ctx, &elements, false)
-	if diags.HasError() {
-		return
-	}
-	for _, member := range elements {
-		err := r.client.CreateGroupMembership(plan.GroupName.ValueString(), member.ValueString())
+	for _, member := range plan.Members {
+		err := r.client.CreateGroupMembership(plan.GroupName.ValueString(), member.Name.ValueString())
 		if err != nil {
 			errstrings = append(errstrings, err.Error())
 		}
@@ -134,13 +137,8 @@ func (r *groupsMembershipResource) Update(ctx context.Context, req resource.Upda
 
 	var errstrings []string
 
-	elements := make([]types.String, 0, len(plan.Members.Elements()))
-	diags = plan.Members.ElementsAs(ctx, &elements, false)
-	if diags.HasError() {
-		return
-	}
-	for _, member := range elements {
-		err := r.client.CreateGroupMembership(plan.GroupName.ValueString(), member.ValueString())
+	for _, member := range plan.Members {
+		err := r.client.CreateGroupMembership(plan.GroupName.ValueString(), member.Name.ValueString())
 		if err != nil {
 			errstrings = append(errstrings, err.Error())
 		}
@@ -204,6 +202,9 @@ func (r *groupsMembershipResource) Configure(_ context.Context, req resource.Con
 
 type groupsMembershipModel struct {
 	GroupName   types.String `tfsdk:"group_name"`
-	Members     types.List   `tfsdk:"members"`
+	Members     []Member     `tfsdk:"members"`
 	LastUpdated types.String `tfsdk:"last_updated"`
+}
+type Member struct {
+	Name types.String `tfsdk:"name"`
 }

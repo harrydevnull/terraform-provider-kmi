@@ -98,14 +98,21 @@ output "output_engine" {
   sensitive = true
 }
 
+locals {
+ members = flatten([for cluster in local.clusters_ids : {
+    name =  format("workload:%s:%s:%s",local.account_name,data.linode_lke_cluster.lke_cluster[cluster].label,local.workload_name)  
+    
+  }])
 
-# resource "kmi_group_membership" "group_membership" {
+}
+  
 
-#   group_name = local.reader_groupname
-#   members    = ["workload:PIM_TEST:pi-qa-automation-webapp-spa:instance_validator-1","hachandr"]
-#   depends_on = [kmi_group.sec_group, kmi_engine.identityengine]
+resource "kmi_group_membership" "group_membership" {
 
-# }
+  group_name = local.reader_groupname
+  members =  local.members
+}
+
 resource "kmi_collections" "collection" {
   depends_on   = [kmi_group.sec_group]
   account_name = local.account_name
