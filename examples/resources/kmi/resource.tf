@@ -50,7 +50,7 @@ resource "kmi_collections" "collection" {
   account_name = local.account_name
   adders       = local.adder_groupname
   modifiers    = local.modifier_groupname
-  readers      = local.reader_groupname 
+  readers      = local.reader_groupname
   name         = local.collection_name
 }
 

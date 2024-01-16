@@ -25,4 +25,5 @@ description: |-
 
 ### Read-Only
 
+- `distributed_date` (String)
 - `last_updated` (String)
