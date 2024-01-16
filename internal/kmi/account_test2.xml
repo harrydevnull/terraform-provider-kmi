@@ -1,5 +1,4 @@
-<!-- q: regex to get all groups-->
-
+<!-- q: get all group_names-->
 
 <account name="PIM_TEST" contact="sme:2756" admin_group="PIM_TEST_admins" max_cols="10"
     max_groups="200" max_defs="100" max_secrets="300" max_templates="10" max_engines="40"

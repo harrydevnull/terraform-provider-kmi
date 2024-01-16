@@ -228,5 +228,6 @@ func (p *kmiProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewCollectionsResource,
 		NewGroupsResource,
 		NewDefinitionsResource,
+		NewGroupsMembershipResource,
 	}
 }

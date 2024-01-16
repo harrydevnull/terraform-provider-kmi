@@ -20,7 +20,7 @@ var (
 )
 
 // NewOrderResource is a helper function to simplify the provider implementation.
-func NewgroupsMembershipResource() resource.Resource {
+func NewGroupsMembershipResource() resource.Resource {
 	return &groupsMembershipResource{}
 }
 
@@ -44,7 +44,7 @@ func (r *groupsMembershipResource) Schema(_ context.Context, _ resource.SchemaRe
 			},
 
 			"members": schema.SetAttribute{
-				ElementType: types.SetType{
+				ElementType: types.ListType{
 					ElemType: types.StringType,
 				},
 				Required: true,
@@ -204,6 +204,6 @@ func (r *groupsMembershipResource) Configure(_ context.Context, req resource.Con
 
 type groupsMembershipModel struct {
 	GroupName   types.String `tfsdk:"group_name"`
-	Members     types.Set    `tfsdk:"members"`
+	Members     types.List   `tfsdk:"members"`
 	LastUpdated types.String `tfsdk:"last_updated"`
 }

@@ -85,46 +85,61 @@ resource "kmi_engine" "identityengine" {
 resource "kmi_group" "sec_group" {
 
 
-  account_name  = local.account_name
-  group_name    = local.reader_groupname
+  account_name = local.account_name
+  group_name   = local.reader_groupname
 }
 
 output "group_output" {
   value = kmi_group.sec_group
 }
-# resource "kmi_collections" "collection" {
-#   depends_on = [ kmi_group.sec_group ]
-#   account_name = local.account_name
-#   adders       = local.adder_groupname
-#   modifiers    = local.modifier_groupname
-#   readers      = local.reader_groupname // for the time being entering the adder group name as the reader group name as UserId hasn't been added to that group
-#   name         = local.collection_name
-# }
 
-# output "collection_output" {
-#   value = kmi_collections.collection
-# }
+output "output_engine" {
+  value     = resource.kmi_engine.identityengine
+  sensitive = true
+}
 
-# resource "kmi_definitions" "defn" {
-#   depends_on = [kmi_collections.collection]
-#   name            = local.definition_name
-#   collection_name = local.collection_name
-#   opaque = jsonencode({
-#     "username" = "bob"
-#     "password" = "pass123"
-#   })
 
-  
-# }
+# resource "kmi_group_membership" "group_membership" {
 
-# resource "kmi_definitions" "ssl_defn" {
-#   name            = local.ssl_cert_definition_name
-#   collection_name = local.collection_name
-#   ssl_cert = {
-#     "auto_generate" = true
-#   }
-#   depends_on = [kmi_collections.collection]
+#   group_name = local.reader_groupname
+#   members    = ["workload:PIM_TEST:pi-qa-automation-webapp-spa:instance_validator-1","hachandr"]
+#   depends_on = [kmi_group.sec_group, kmi_engine.identityengine]
+
 # }
+resource "kmi_collections" "collection" {
+  depends_on   = [kmi_group.sec_group]
+  account_name = local.account_name
+  adders       = local.adder_groupname
+  modifiers    = local.modifier_groupname
+  readers      = local.reader_groupname // for the time being entering the adder group name as the reader group name as UserId hasn't been added to that group
+  name         = local.collection_name
+}
+
+output "collection_output" {
+  value = kmi_collections.collection
+}
+
+resource "kmi_definitions" "defn" {
+  depends_on      = [kmi_collections.collection]
+  name            = local.definition_name
+  collection_name = local.collection_name
+  opaque = jsonencode({
+    "username" = "bob"
+    "password" = "pass123"
+  })
+
+
+}
+
+resource "kmi_definitions" "ssl_defn" {
+  name            = local.ssl_cert_definition_name
+  collection_name = local.collection_name
+  ssl_cert = {
+    "auto_generate" = true
+  }
+  depends_on = [kmi_collections.collection]
+}
+
 # resource "kmi_definitions" "az_defn" {
 #   name            = local.azure_sp_definition_name
 #   collection_name = local.collection_name
@@ -134,20 +149,20 @@ output "group_output" {
 #   depends_on = [kmi_collections.collection]
 # }
 
-# resource "kmi_definitions" "symetric_defn" {
-#   name            = local.symetric_key_definition_name
-#   collection_name = local.collection_name
-#   symmetric_key = {
-#     "auto_generate"  = true
-#     "key_size_bytes" = 16
-#     "expire_period"  = "3 months"
-#     "refresh_period" = "1 month"
+resource "kmi_definitions" "symetric_defn" {
+  name            = local.symetric_key_definition_name
+  collection_name = local.collection_name
+  symmetric_key = {
+    "auto_generate"  = true
+    "key_size_bytes" = 16
+    "expire_period"  = "3 months"
+    "refresh_period" = "1 month"
 
-#   }
-#   depends_on = [kmi_collections.collection]
-# }
+  }
+  depends_on = [kmi_collections.collection]
+}
 
-# output "definitions_output" {
-#   value = kmi_definitions.symetric_defn
-# }
+output "definitions_output" {
+  value = kmi_definitions.symetric_defn
+}
 
