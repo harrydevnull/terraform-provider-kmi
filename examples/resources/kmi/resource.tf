@@ -35,12 +35,8 @@ resource "kmi_engine" "identityengine" {
 
 
 resource "kmi_group" "group_name" {
-
-
   account_name  = local.account_name
   group_name    = local.reader_groupname
-  engine        = data.linode_lke_cluster.lke_cluster[each.value].label
-  workload_name = local.workload_name
 }
 
 output "group_output" {

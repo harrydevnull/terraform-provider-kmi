@@ -31,20 +31,8 @@ locals {
   workload_name = "instance_validator-1"
   clusters_ids = [
     "103067",
-    # "140548",
-    # "143042",
-    # "143738",
-    # "143752",
-    # "143888",
-    # "143892",
-    # "143893",
-    # "144139",
-    # "144142",
-    # "144149",
-    # "145885",
-    # "147806",
-    # "149191",
-    # "149192"
+    
+    
   ]
   kubernetes_service_account   = "kmi-sa"
   kubernetes_namespace         = "app"
@@ -105,13 +93,14 @@ locals {
   }])
 
 }
-  
 
 resource "kmi_group_membership" "group_membership" {
 
   group_name = local.reader_groupname
   members =  local.members
 }
+
+
 
 resource "kmi_collections" "collection" {
   depends_on   = [kmi_group.sec_group]
