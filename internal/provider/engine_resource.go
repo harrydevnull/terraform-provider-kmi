@@ -137,50 +137,6 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	tflog.Debug(ctx, "After Saving Identity engine")
 
-	identityEngine, err := r.client.GetIdentityEngine(plan.AccountName.ValueString(), plan.Engine.ValueString())
-	tflog.SetField(ctx, "Identity Engine", identityEngine)
-	tflog.Debug(ctx, "Getting Identity engine")
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
-		)
-		return
-	}
-
-	for wrkIndex, projectionafter := range identityEngine.Workload {
-		kmiprojection, err := r.client.GetWorkloadDetails(plan.AccountName.ValueString(), plan.Engine.ValueString(), projectionafter.Projection)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating Identity Engine",
-				"Could not create Identity, unexpected error: "+err.Error(),
-			)
-			return
-		}
-
-		kmiserviceAcc := kmiprojection.KubernetesServiceAccount.Text
-		tflog.Debug(ctx, "After Saving Identity engine %s"+kmiserviceAcc)
-		serviceAccSlic := strings.Split(kmiserviceAcc, ":")
-		var k8ServiceAccount = "UNKNOWN"
-		var k8Namepace = "UNKNOWN"
-
-		if len(serviceAccSlic) > 3 {
-
-			k8ServiceAccount = serviceAccSlic[3]
-			k8Namepace = serviceAccSlic[2]
-			tflog.Debug(ctx, "Service Account Slice "+k8ServiceAccount+" :"+k8Namepace)
-		}
-
-		wrkmodel := WorkloadResourceModel{
-			Name:                     types.StringValue(kmiprojection.Projection),
-			KubernetesServiceAccount: types.StringValue(kmiserviceAcc),
-			ServiceAccount:           types.StringValue(k8ServiceAccount),
-			Namespace:                types.StringValue(k8Namepace),
-			Region:                   types.StringValue(kmiprojection.Region.Text),
-		}
-		plan.Workloads[wrkIndex] = wrkmodel
-	}
-	// plan.LastUpdated = identityEngine.Published
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	// Set state to fully populated data

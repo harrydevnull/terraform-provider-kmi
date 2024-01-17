@@ -28,15 +28,28 @@ provider "kmi" {
 
 locals {
   account_name  = "PIM_TEST"
-  workload_name = "instance_validator-1"
+  workload_name = "instance_validator"
   clusters_ids = [
     "103067",
-    
-    
+    "140548",
+    "143042",
+    "143738",
+    "143752",
+    "143888",
+    "143892",
+    "143893",
+    "144139",
+    "144142",
+    "144149",
+    "145885",
+    "147806",
+    "149191",
+    "149192"
+
   ]
   kubernetes_service_account   = "kmi-sa"
   kubernetes_namespace         = "app"
-  reader_groupname             = "PIM_READERS-HAREE"
+  reader_groupname             = "PIM_READERS-SHARED"
   adder_groupname              = "PIM_TEST_admins"
   modifier_groupname           = "PIM_TEST_admins"
   collection_name              = "testcollection-HAREE"
@@ -69,10 +82,13 @@ resource "kmi_engine" "identityengine" {
 }
 
 
+output "output_engine" {
+  value     = resource.kmi_engine.identityengine
+  sensitive = true
+}
+
 
 resource "kmi_group" "sec_group" {
-
-
   account_name = local.account_name
   group_name   = local.reader_groupname
 }
@@ -81,15 +97,11 @@ output "group_output" {
   value = kmi_group.sec_group
 }
 
-output "output_engine" {
-  value     = resource.kmi_engine.identityengine
-  sensitive = true
-}
 
 locals {
  members = flatten([for cluster in local.clusters_ids : {
     name =  format("workload:%s:%s:%s",local.account_name,data.linode_lke_cluster.lke_cluster[cluster].label,local.workload_name)  
-    
+
   }])
 
 }
@@ -136,14 +148,6 @@ resource "kmi_definitions" "ssl_defn" {
   depends_on = [kmi_collections.collection]
 }
 
-# resource "kmi_definitions" "az_defn" {
-#   name            = local.azure_sp_definition_name
-#   collection_name = local.collection_name
-#   azure_sp = {
-#     "auto_generate" = true
-#   }
-#   depends_on = [kmi_collections.collection]
-# }
 
 resource "kmi_definitions" "symetric_defn" {
   name            = local.symetric_key_definition_name
@@ -162,3 +166,13 @@ output "definitions_output" {
   value = kmi_definitions.symetric_defn
 }
 
+
+
+# resource "kmi_definitions" "az_defn" {
+#   name            = local.azure_sp_definition_name
+#   collection_name = local.collection_name
+#   azure_sp = {
+#     "auto_generate" = true
+#   }
+#   depends_on = [kmi_collections.collection]
+# }
