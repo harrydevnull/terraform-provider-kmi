@@ -82,9 +82,6 @@ func (r *engineResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							Required:    true,
 							Description: "The Linode region to which cluster belongs to curl -s https://api.linode.com/v4/regions/ | jq .data[].id ",
 						},
-						"kubernetes_service_account": schema.StringAttribute{
-							Computed: true,
-						},
 					},
 				},
 			},
@@ -97,7 +94,7 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 	var plan EngineResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	tflog.SetField(ctx, "Plan Engine", plan)
-	tflog.Debug(ctx, "Getting Identity engine")
+	tflog.Debug(ctx, "Creating Identity engine")
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -182,14 +179,27 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 		}
 
 		kmiserviceAcc := kmiprojection.KubernetesServiceAccount.Text
-		k8ServiceAccount := strings.Split(kmiserviceAcc, ":")[3]
-		k8Namepace := strings.Split(kmiserviceAcc, ":")[2]
+		var k8ServiceAccount = ""
+		var k8Namepace = ""
+		k8String := strings.Split(kmiserviceAcc, ":")
+		// check if the service account is in the format system:serviceaccount:namespace:serviceaccount
+		if len(k8String) != 4 {
+
+			resp.Diagnostics.AddError(
+				"Error Reading Identity Engine",
+				"Could not create Identity, unexpected error: "+err.Error(),
+			)
+		}
+		//check if length of the string is 4
+		if len(k8String) > 3 {
+			k8Namepace = strings.Split(kmiserviceAcc, ":")[2]
+		}
+
 		wrkmodel := WorkloadResourceModel{
-			Name:                     types.StringValue(kmiprojection.Projection),
-			KubernetesServiceAccount: types.StringValue(kmiserviceAcc),
-			ServiceAccount:           types.StringValue(k8ServiceAccount),
-			Namespace:                types.StringValue(k8Namepace),
-			Region:                   types.StringValue(kmiprojection.Region.Text),
+			Name:           types.StringValue(kmiprojection.Projection),
+			ServiceAccount: types.StringValue(k8ServiceAccount),
+			Namespace:      types.StringValue(k8Namepace),
+			Region:         types.StringValue(kmiprojection.Region.Text),
 		}
 		state.Workloads = append(state.Workloads, wrkmodel)
 	}
@@ -271,11 +281,10 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		k8ServiceAccount := strings.Split(kmiserviceAcc, ":")[3]
 		k8Namepace := strings.Split(kmiserviceAcc, ":")[2]
 		wrkmodel := WorkloadResourceModel{
-			Name:                     types.StringValue(kmiprojection.Projection),
-			KubernetesServiceAccount: types.StringValue(kmiserviceAcc),
-			ServiceAccount:           types.StringValue(k8ServiceAccount),
-			Namespace:                types.StringValue(k8Namepace),
-			Region:                   types.StringValue(kmiprojection.Region.Text),
+			Name:           types.StringValue(kmiprojection.Projection),
+			ServiceAccount: types.StringValue(k8ServiceAccount),
+			Namespace:      types.StringValue(k8Namepace),
+			Region:         types.StringValue(kmiprojection.Region.Text),
 		}
 		plan.Workloads[wrkIndex] = wrkmodel
 	}
@@ -370,9 +379,8 @@ type EngineResourceModel struct {
 }
 
 type WorkloadResourceModel struct {
-	Name                     types.String `tfsdk:"name"`
-	KubernetesServiceAccount types.String `tfsdk:"kubernetes_service_account"`
-	ServiceAccount           types.String `tfsdk:"serviceaccount"`
-	Namespace                types.String `tfsdk:"namespace"`
-	Region                   types.String `tfsdk:"region"`
+	Name           types.String `tfsdk:"name"`
+	ServiceAccount types.String `tfsdk:"serviceaccount"`
+	Namespace      types.String `tfsdk:"namespace"`
+	Region         types.String `tfsdk:"region"`
 }

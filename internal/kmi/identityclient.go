@@ -17,9 +17,14 @@ func (client *KMIRestClient) SaveIdentityEngine(account string, engineName strin
 		return err
 	}
 
-	_, err = client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
+	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
 	if err != nil {
 		return err
+	}
+	defer resp.Body.Close()
+	// go write error handling code for 200
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling SaveIdentityEngine api  %s and payload is %v", resp.Status, resp)
 	}
 	return nil
 }
