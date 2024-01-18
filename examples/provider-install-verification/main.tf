@@ -17,7 +17,7 @@ provider "linode" {
 
 
 provider "kmi" {
-  host      = "HOST"
+  host      = "Hostname of the KMI instance"
   api_key   = "path to api key"
   api_crt   = "path to api crt"
   akamai_ca = "Path to CA"
