@@ -18,4 +18,15 @@ description: |-
 ### Required
 
 - `group_name` (String) The name of the group to create.
-- `members` (Set of List of String)
+- `members` (Attributes List) (see [below for nested schema](#nestedatt--members))
+
+### Read-Only
+
+- `last_updated` (String) The last time the group was updated.
+
+<a id="nestedatt--members"></a>
+### Nested Schema for `members`
+
+Required:
+
+- `name` (String)

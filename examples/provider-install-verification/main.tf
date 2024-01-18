@@ -99,8 +99,8 @@ output "group_output" {
 
 
 locals {
- members = flatten([for cluster in local.clusters_ids : {
-    name =  format("workload:%s:%s:%s",local.account_name,data.linode_lke_cluster.lke_cluster[cluster].label,local.workload_name)  
+  members = flatten([for cluster in local.clusters_ids : {
+    name = format("workload:%s:%s:%s", local.account_name, data.linode_lke_cluster.lke_cluster[cluster].label, local.workload_name)
 
   }])
 
@@ -109,7 +109,7 @@ locals {
 resource "kmi_group_membership" "group_membership" {
 
   group_name = local.reader_groupname
-  members =  local.members
+  members    = local.members
 }
 
 
