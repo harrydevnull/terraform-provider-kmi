@@ -17,10 +17,10 @@ provider "linode" {
 
 
 provider "kmi" {
-  host      = "https://kdc-api.shared.qa.akamai.com:11838"
-  api_key   = "/Users/hachandr/Documents/work/kmi-k8/api_cert.key"
-  api_crt   = "/Users/hachandr/Documents/work/kmi-k8/api_cert.crt"
-  akamai_ca = "/Users/hachandr/Documents/work/kmi-k8/akamai_ca_list.pem"
+  host      = "HOST"
+  api_key   = "path to api key"
+  api_crt   = "path to api crt"
+  akamai_ca = "Path to CA"
 
 }
 
@@ -30,21 +30,8 @@ locals {
   account_name  = "PIM_TEST"
   workload_name = "instance_validator"
   clusters_ids = [
-    "103067",
-    "140548",
-    "143042",
-    "143738",
-    "143752",
-    "143888",
-    "143892",
-    "143893",
-    "144139",
-    "144142",
-    "144149",
-    "145885",
-    "147806",
-    "149191",
-    "149192"
+    "<CLUSTER_ID>",
+    
 
   ]
   kubernetes_service_account   = "kmi-sa"
@@ -57,6 +44,7 @@ locals {
   ssl_cert_definition_name     = "ssl_cert_definition_name"
   azure_sp_definition_name     = "azurespdefinitionname"
   symetric_key_definition_name = "symetrickeydefinitionname"
+  
 }
 
 
