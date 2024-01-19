@@ -13,7 +13,7 @@ func TestGetCollection(t *testing.T) {
 
 	expected := "`<collection name=\"testcollection1\" source=\"restserv:user:hachandr_kmi_cert\" readers=\"PIM_READERS\" adders=\"PIM_TEST_admins\" modifiers=\"PIM_TEST_admins\" modified=\"355396416\" distributed=\"355397350\" distributed_date=\"2024-01-14 04:19:42\" account=\"PIM_TEST\"></collection>`"
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, expected)
+		fmt.Fprint(w, expected)
 	}))
 	defer svr.Close()
 	client := &KMIRestClient{
@@ -45,7 +45,7 @@ func TestGetGroup(t *testing.T) {
 
 	expected := "`<group name=\"PIM_ADMIN\" type=\"union\" source=\"reqserv:user:hachandr_kmi_cert\" account=\"PIM_TEST\"><adders>superusers</adders><modifiers>superusers</modifiers></group>`"
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, expected)
+		fmt.Fprint(w, expected)
 	}))
 	defer svr.Close()
 	client := &KMIRestClient{
