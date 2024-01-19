@@ -40,7 +40,3 @@ Required:
 - `namespace` (String) The Kubernetes namespace to which workload belongs to
 - `region` (String) The Linode region to which cluster belongs to curl -s https://api.linode.com/v4/regions/ | jq .data[].id
 - `serviceaccount` (String) The Kubernetes service account
-
-Read-Only:
-
-- `kubernetes_service_account` (String)
