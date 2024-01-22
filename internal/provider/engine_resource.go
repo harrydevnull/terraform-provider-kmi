@@ -267,8 +267,9 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	for wrkIndex, projectionafter := range identityEngine.Workload {
-		kmiprojection, err := r.client.GetWorkloadDetails(plan.AccountName.ValueString(), plan.Engine.ValueString(), projectionafter.Projection)
+	// for wrkIndex, projectionafter := range identityEngine.Workload {
+	for wrkIndex, projectionafter := range plan.Workloads {
+		kmiprojection, err := r.client.GetWorkloadDetails(plan.AccountName.ValueString(), plan.Engine.ValueString(), projectionafter.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Identity Engine",

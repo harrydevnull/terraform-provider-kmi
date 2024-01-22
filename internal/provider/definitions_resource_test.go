@@ -40,6 +40,26 @@ func Test_Definition_SSL(t *testing.T) {
 
 }
 
+func Test_Definition_SSLCA(t *testing.T) {
+
+	defn := kmi.KMIDefinition{
+		AutoGenerate: "True",
+		Type:         "ssl_cert",
+		Option: &kmi.KMIOption{
+			Name: "is_ca",
+			Text: "1",
+		},
+	}
+	out, _ := xml.MarshalIndent(defn, "", "")
+	data := []byte(`<definition type="ssl_cert"><auto_generate>True</auto_generate><option name="is_ca">1</option></definition>`)
+	fmt.Println(string(out))
+	fmt.Println(string(data))
+	if !reflect.DeepEqual(string(out), string(data)) {
+		t.Errorf("Marshalling() = %v, want %v", out, data)
+	}
+
+}
+
 func Test_Definition_Opaque(t *testing.T) {
 
 	defn := kmi.KMIDefinition{

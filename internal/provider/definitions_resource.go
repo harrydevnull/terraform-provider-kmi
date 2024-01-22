@@ -60,6 +60,22 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required:    true,
 						Description: "Auto generate the SSL certificate. ",
 					},
+					"expire_period": schema.StringAttribute{
+						Optional:    true,
+						Description: "The expire period for the symmetric key. ",
+					},
+					"refresh_period": schema.StringAttribute{
+						Optional:    true,
+						Description: "The refresh period for the symmetric key. ",
+					},
+					"issuer": schema.StringAttribute{
+						Optional:    true,
+						Description: "The issuer for the SSL certificate. ",
+					},
+					"is_ca": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Is the SSL certificate a CA. ",
+					},
 				},
 				Optional:    true,
 				Description: "The SSL certificate to create. ",
@@ -132,6 +148,14 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 	var err error
 	if plan.SSLCert != nil {
 		tflog.Info(ctx, "SSl cert is not nil")
+		if !plan.SSLCert.Issuer.IsNull() && !plan.SSLCert.IsCA.IsNull() {
+			resp.Diagnostics.AddError(
+				"Validation error",
+				"IsCA should not be set if Issuer is set ",
+			)
+			return
+
+		}
 
 		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
 	}
@@ -430,14 +454,38 @@ func (op Opaque) RequestPayload() ([]byte, error) {
 }
 
 type SSLCert struct {
-	AutoGenerate types.Bool `tfsdk:"auto_generate"`
+	AutoGenerate  types.Bool   `tfsdk:"auto_generate"`
+	ExpiryPeriod  types.String `tfsdk:"expire_period"`
+	RefreshPeriod types.String `tfsdk:"refresh_period"`
+	Issuer        types.String `tfsdk:"issuer"`
+	IsCA          types.Bool   `tfsdk:"is_ca"`
 }
 
 func (s SSLCert) RequestPayload() ([]byte, error) {
 
+	if !s.Issuer.IsNull() && !s.IsCA.IsNull() {
+		return nil, fmt.Errorf("IsCA should not be set if Issuer is set ")
+	}
+	var option *kmi.KMIOption
+	if !s.IsCA.IsNull() {
+		option = &kmi.KMIOption{
+			Name: "is_ca",
+			Text: boolStr(s.IsCA.ValueBool()),
+		}
+	}
+	if !s.Issuer.IsNull() {
+		option = &kmi.KMIOption{
+			Name: "issuer",
+			Text: s.Issuer.ValueString(),
+		}
+	}
+
 	defn := kmi.KMIDefinition{
-		AutoGenerate: boolStr(s.AutoGenerate.ValueBool()),
-		Type:         "ssl_cert",
+		AutoGenerate:  boolStr(s.AutoGenerate.ValueBool()),
+		Type:          "ssl_cert",
+		ExpirePeriod:  s.ExpiryPeriod.ValueString(),
+		RefreshPeriod: s.RefreshPeriod.ValueString(),
+		Option:        option,
 	}
 	return xml.MarshalIndent(defn, " ", "  ")
 
