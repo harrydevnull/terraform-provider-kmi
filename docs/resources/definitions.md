@@ -26,6 +26,7 @@ description: |-
 - `opaque` (String) The Opaque definition to create.
 - `ssl_cert` (Attributes) The SSL certificate to create. (see [below for nested schema](#nestedatt--ssl_cert))
 - `symmetric_key` (Attributes) (see [below for nested schema](#nestedatt--symmetric_key))
+- `transparent` (String) The Transparent definition to create.
 
 ### Read-Only
 

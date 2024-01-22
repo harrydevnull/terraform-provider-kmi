@@ -190,7 +190,7 @@ type kmigenerator interface {
 	RequestPayload() ([]byte, error)
 }
 
-type OpaqueSecret struct {
+type BlockSecret struct {
 	XMLName xml.Name `xml:"secret"`
 	Text    string   `xml:",chardata"`
 	Block   struct {

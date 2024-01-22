@@ -32,7 +32,7 @@ func (client *KMIRestClient) CreateDefinition(collectionName string, definitionN
 	return nil
 }
 
-func (client *KMIRestClient) CreateOpaqueSecret(collectionName string, definitionName string, opaque OpaqueSecret) error {
+func (client *KMIRestClient) CreateBlockSecret(collectionName string, definitionName string, opaque BlockSecret) error {
 	idenityengineurl := fmt.Sprintf("%s/secret/Col=%s/Def=%s/Idx=AUTOINDEX", client.Host, collectionName, definitionName)
 	fmt.Println(idenityengineurl)
 

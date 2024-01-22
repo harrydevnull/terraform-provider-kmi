@@ -117,6 +117,10 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional:    true,
 				Description: "The Opaque definition to create. ",
 			},
+			"transparent": schema.StringAttribute{
+				Optional:    true,
+				Description: "The Transparent definition to create. ",
+			},
 			"secret_indexes": schema.StringAttribute{
 				Computed:    true,
 				Description: "The list of secret indexes for the definition. ",
@@ -194,9 +198,60 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	if !plan.Opaque.IsNull() {
-		op := Opaque{}
 		tflog.Info(ctx, "Opaque is not nil")
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), op)
+		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), Opaque{})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Definition",
+				"Could not create Definition, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
+			Block: struct {
+				Text string "xml:\",chardata\""
+				Name string "xml:\"name,attr\""
+			}{
+				Name: "opaque",
+				Text: plan.Opaque.ValueString(),
+			},
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Opaque Secret",
+				"Could not create Opaue Secret, unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+	if !plan.Transparent.IsNull() {
+		tflog.Info(ctx, "Transparent is not nil")
+		transparent := Transparent{}
+
+		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), transparent)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Definition",
+				"Could not create Definition, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
+			Block: struct {
+				Text string "xml:\",chardata\""
+				Name string "xml:\"name,attr\""
+			}{
+				Name: "transparent",
+				Text: plan.Transparent.ValueString(),
+			},
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Transparent Block",
+				"Could not create Transparent Block, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	if err != nil {
@@ -313,7 +368,7 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 			)
 			return
 		}
-		err = r.client.CreateOpaqueSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.OpaqueSecret{
+		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
 			Block: struct {
 				Text string "xml:\",chardata\""
 				Name string "xml:\"name,attr\""
@@ -326,6 +381,36 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 			resp.Diagnostics.AddError(
 				"Error creating Opaque Secret",
 				"Could not create Opaue Secret, unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+
+	if !plan.Transparent.IsNull() {
+		tflog.Info(ctx, "Transparent is not nil")
+		transparent := Transparent{}
+
+		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), transparent)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Definition",
+				"Could not create Definition, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
+			Block: struct {
+				Text string "xml:\",chardata\""
+				Name string "xml:\"name,attr\""
+			}{
+				Name: "transparent",
+				Text: plan.Transparent.ValueString(),
+			},
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating Transparent Block",
+				"Could not create Transparent Block, unexpected error: "+err.Error(),
 			)
 			return
 		}
@@ -429,6 +514,7 @@ type definitionResourceModel struct {
 	SSLCert        *SSLCert     `tfsdk:"ssl_cert"`
 	AzureSP        *AzureSP     `tfsdk:"azure_sp"`
 	Opaque         types.String `tfsdk:"opaque"`
+	Transparent    types.String `tfsdk:"transparent"`
 	SymetricKey    *SymetricKey `tfsdk:"symmetric_key"`
 	Options        types.List   `tfsdk:"options"`
 	SecretIndexes  types.String `tfsdk:"secret_indexes"`
@@ -460,7 +546,17 @@ func (op Opaque) RequestPayload() ([]byte, error) {
 		Type: "opaque",
 	}
 	return xml.MarshalIndent(defn, "", "")
-	//return xml.MarshalIndent(defn, " ", "  ")
+
+}
+
+type Transparent struct {
+}
+
+func (op Transparent) RequestPayload() ([]byte, error) {
+	defn := kmi.KMIDefinition{
+		Type: "transparent",
+	}
+	return xml.MarshalIndent(defn, "", "")
 }
 
 type SSLCert struct {
