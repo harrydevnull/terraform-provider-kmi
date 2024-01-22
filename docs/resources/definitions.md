@@ -48,6 +48,7 @@ Required:
 
 - `auto_generate` (Boolean) Auto generate the SSL certificate.
 
+
 Optional:
 
 - `cn` (String) Common Name of the SSL certificate.
