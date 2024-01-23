@@ -24,9 +24,15 @@ func (client *KMIRestClient) CreateTemplateOrSign(cacollectionName string, cadef
 		return err
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	// b, err := ioutil.ReadAll(resp.Body)  Go.1.15 and earlier
+	if err != nil {
+		return err
+	}
+
 	// go write error handling code for 200
 	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("error while calling CreateTemplate api  %s and payload is %v", resp.Status, resp)
+		return fmt.Errorf("error while calling CreateTemplate api  %s and payload is %v", resp.Status, string(b))
 	}
 
 	return nil

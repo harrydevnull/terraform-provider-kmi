@@ -2,6 +2,7 @@ package kmi
 
 import (
 	"encoding/xml"
+	"fmt"
 
 	"log"
 	"reflect"
@@ -38,4 +39,21 @@ func Test_TemplateMarshalling(t *testing.T) {
 		t.Errorf("Marshalling() = %v, want %v", e1.Collectionacl.Target, "instance-validator")
 	}
 
+}
+
+func Test_SigningMarshalling(t *testing.T) {
+	kmiSigner := Template{
+		Collectionacl: &ApproveClientCollection{
+			Target: "sometarget",
+		},
+	}
+
+	out, _ := xml.MarshalIndent(kmiSigner, "", "")
+
+	data := []byte(`<template><collectionacl target="sometarget"></collectionacl></template>`)
+	fmt.Println(string(out))
+	fmt.Println(string(data))
+	if !reflect.DeepEqual(string(out), string(data)) {
+		t.Errorf("Marshalling() = %v, want %v", out, data)
+	}
 }

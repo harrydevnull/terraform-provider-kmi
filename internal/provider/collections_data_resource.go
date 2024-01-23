@@ -66,12 +66,12 @@ func (d *collectionsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 func (d *collectionsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state collectionResourceModel
 
-	// Get refreshed order value from HashiCups
+	// Get refreshed order value from KMI
 	kmicollection, err := d.client.GetCollection(state.CollectionName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading HashiCups Order",
-			"Could not read HashiCups order ID "+state.CollectionName.ValueString()+": "+err.Error(),
+			"Error Reading Collection",
+			"Could not read Collection "+state.CollectionName.ValueString()+": "+err.Error(),
 		)
 		return
 	}

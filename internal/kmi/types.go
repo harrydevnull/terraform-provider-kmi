@@ -229,8 +229,6 @@ type ConstraintType struct {
 }
 
 type ApproveClientCollection struct {
-	Text     string `xml:",chardata"`
-	Target   string `xml:"target,attr"`
-	AddDate  string `xml:"add_date,attr"`
-	Modified string `xml:"modified,attr"`
+	Text   string `xml:",chardata"`
+	Target string `xml:"target,attr"`
 }

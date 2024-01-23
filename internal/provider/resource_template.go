@@ -187,7 +187,7 @@ func (r *templateResource) Read(ctx context.Context, req resource.ReadRequest, r
 	templateDetails, err := r.client.GetTemplate(state.CACollectionName.ValueString(), state.CADefinitionName.ValueString(), state.TemplateName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading HashiCups Order",
+			"Error Reading Template",
 			"Could not read Template "+state.TemplateName.ValueString()+": "+err.Error(),
 		)
 		return
