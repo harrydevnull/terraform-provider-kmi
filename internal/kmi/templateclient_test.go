@@ -13,7 +13,7 @@ func Test_TemplateMarshalling(t *testing.T) {
 	<constraint type="common_name" warn="False" source="restserv:user:hachandr_kmi_cert" add_date="2023-12-20 17:16:27" modified="354687072">instance-validator</constraint>
 	<collectionacl target="PIM_SECRETS" source="restserv:user:hachandr_kmi_cert" add_date="2023-12-20 17:16:28" modified="354687073"/>
   </template>`)
-	var e1 Template
+	var e1 TemplateResponse
 	err := xml.Unmarshal(data, &e1)
 	if err != nil {
 		log.Fatal(err)
