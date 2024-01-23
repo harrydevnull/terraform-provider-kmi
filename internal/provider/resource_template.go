@@ -112,6 +112,8 @@ func (r *templateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 // Create creates the resource and sets the initial Terraform state.
 func (r *templateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan templateResourceModel
+	tflog.SetField(ctx, "Template", plan)
+	tflog.Info(ctx, "Create Template Request fist")
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -127,9 +129,9 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 	//This is totally wrong, but I don't know how to do it better
 	constraintTypes := []kmi.ConstraintType{}
 	for _, v := range elements {
-		if !v.common_name.IsNull() {
+		if !v.CommonName.IsNull() {
 			constraintTypes = append(constraintTypes, kmi.ConstraintType{
-				Type: v.common_name.ValueString(),
+				Type: v.CommonName.ValueString(),
 			})
 		}
 
@@ -139,7 +141,7 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	tflog.SetField(ctx, "Template", kmitemplate)
 	tflog.Debug(ctx, "CreateTemplateOrSign Template")
-	err := r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.templateName.ValueString(), kmitemplate)
+	err := r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmitemplate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Template",
@@ -154,7 +156,7 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 		},
 	}
 	tflog.Debug(ctx, "CreateTemplateOrSign CSR signer")
-	err = r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.templateName.ValueString(), kmiSigner)
+	err = r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmiSigner)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error signing the request",
@@ -181,25 +183,25 @@ func (r *templateResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	_, err := r.client.GetTemplate(state.CACollectionName.ValueString(), state.CADefinitionName.ValueString(), state.templateName.ValueString())
+	templateDetails, err := r.client.GetTemplate(state.CACollectionName.ValueString(), state.CADefinitionName.ValueString(), state.TemplateName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading HashiCups Order",
-			"Could not read Template "+state.templateName.ValueString()+": "+err.Error(),
+			"Could not read Template "+state.TemplateName.ValueString()+": "+err.Error(),
 		)
 		return
 	}
 
-	// for _, v := range templateDetails.Constraint {
-	// 	// state.Options[v.Text] = types.String(v.Text)
-	// 	if (v.Type == "common_name") && (v.Text != "*") {
-	// 		state.Options = append(state.Options, templateResourceModelOptions{
-	// 			common_name: types.StringValue(v.Text),
-	// 		})
-	// 	}
-	// }
-	// optionsfromKmi := []templateResourceModelOptions{}
-	// state.Options = optionsfromKmi
+	for _, v := range templateDetails.Constraint {
+		// state.Options[v.Text] = types.String(v.Text)
+		if (v.Type == "common_name") && (v.Text != "*") {
+			state.Options = append(state.Options, templateResourceModelOptions{
+				CommonName: types.StringValue(v.Text),
+			})
+		}
+	}
+	optionsfromKmi := []templateResourceModelOptions{}
+	state.Options = optionsfromKmi
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -236,22 +238,23 @@ func (r *templateResource) Configure(_ context.Context, req resource.ConfigureRe
 }
 
 type templateResourceModel struct {
-	LastUpdated          types.String                   `tfsdk:"last_updated"`
-	CADefinitionName     types.String                   `tfsdk:"ca_definition"`
-	CACollectionName     types.String                   `tfsdk:"ca_collection"`
-	ClientCollectionName types.String                   `tfsdk:"client_collection"`
-	templateName         types.String                   `tfsdk:"template_name"`
-	Options              []templateResourceModelOptions `tfsdk:"options"`
+	CACollectionName     types.String `tfsdk:"ca_collection"`
+	CADefinitionName     types.String `tfsdk:"ca_definition"`
+	TemplateName         types.String `tfsdk:"template_name"`
+	ClientCollectionName types.String `tfsdk:"client_collection"`
+
+	Options     []templateResourceModelOptions `tfsdk:"options"`
+	LastUpdated types.String                   `tfsdk:"last_updated"`
 }
 type templateResourceModelOptions struct {
-	// min_ttl             types.String `tfsdk:"min_ttl"`
-	// max_ttl             types.String `tfsdk:"max_ttl"`
-	// leaf_exceeds_ca_ttl types.Bool   `tfsdk:"leaf_exceeds_ca_ttl"`
-	// allow_ca            types.Bool   `tfsdk:"allow_ca"`
-	common_name types.String `tfsdk:"common_name"`
-	// dns_san             types.String `tfsdk:"dns_san"`
-	// uri_san             types.String `tfsdk:"uri_san"`
-	// ip_san              types.String `tfsdk:"ip_san"`
-	// key_type            types.String `tfsdk:"key_type"`
-	// hash_type           types.String `tfsdk:"hash_type"`
+	Min_ttl             types.String `tfsdk:"min_ttl"`
+	Max_ttl             types.String `tfsdk:"max_ttl"`
+	Leaf_exceeds_ca_ttl types.String `tfsdk:"leaf_exceeds_ca_ttl"`
+	Allow_ca            types.String `tfsdk:"allow_ca"`
+	CommonName          types.String `tfsdk:"common_name"`
+	Dns_san             types.String `tfsdk:"dns_san"`
+	Uri_san             types.String `tfsdk:"uri_san"`
+	Ip_san              types.String `tfsdk:"ip_san"`
+	Key_type            types.String `tfsdk:"key_type"`
+	Hash_type           types.String `tfsdk:"hash_type"`
 }
