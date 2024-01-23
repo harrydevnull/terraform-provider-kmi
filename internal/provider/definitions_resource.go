@@ -72,9 +72,19 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "The issuer for the SSL certificate. ",
 					},
-					"is_ca": schema.BoolAttribute{
+					// Error from KMI side: is_ca must not exist or have an integral value
+					// is_ca has to be 1 if enabled, cannot be a true/false boolean
+					"is_ca": schema.Int64Attribute{
 						Optional:    true,
 						Description: "Is the SSL certificate a CA. ",
+					},
+					"cn": schema.StringAttribute{
+						Optional:    true,
+						Description: "Common Name of the SSL certificate. ",
+					},
+					"subj_alt_names": schema.StringAttribute{
+						Optional:    true,
+						Description: "Subject Alternative Names of the SSL certificate. ",
 					},
 				},
 				Optional:    true,
@@ -303,7 +313,7 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 			)
 			return
 		}
-		err = r.client.CreateOpaueSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.OpaqueSecret{
+		err = r.client.CreateOpaqueSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.OpaqueSecret{
 			Block: struct {
 				Text string "xml:\",chardata\""
 				Name string "xml:\"name,attr\""
@@ -458,7 +468,9 @@ type SSLCert struct {
 	ExpiryPeriod  types.String `tfsdk:"expire_period"`
 	RefreshPeriod types.String `tfsdk:"refresh_period"`
 	Issuer        types.String `tfsdk:"issuer"`
-	IsCA          types.Bool   `tfsdk:"is_ca"`
+	IsCA          types.Int64  `tfsdk:"is_ca"`
+	Cn            types.String `tfsdk:"cn"`
+	Sans          types.String `tfsdk:"subj_alt_names"`
 }
 
 func (s SSLCert) RequestPayload() ([]byte, error) {
@@ -466,18 +478,34 @@ func (s SSLCert) RequestPayload() ([]byte, error) {
 	if !s.Issuer.IsNull() && !s.IsCA.IsNull() {
 		return nil, fmt.Errorf("IsCA should not be set if Issuer is set ")
 	}
-	var option *kmi.KMIOption
+	var options []*kmi.KMIOption
 	if !s.IsCA.IsNull() {
-		option = &kmi.KMIOption{
+		option := &kmi.KMIOption{
 			Name: "is_ca",
-			Text: boolStr(s.IsCA.ValueBool()),
+			Text: fmt.Sprintf("%d", s.IsCA.ValueInt64()),
 		}
+		options = append(options, option)
 	}
 	if !s.Issuer.IsNull() {
-		option = &kmi.KMIOption{
+		option := &kmi.KMIOption{
 			Name: "issuer",
 			Text: s.Issuer.ValueString(),
 		}
+		options = append(options, option)
+	}
+	if !s.Cn.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "cn",
+			Text: s.Cn.ValueString(),
+		}
+		options = append(options, option)
+	}
+	if !s.Sans.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "subj_alt_names",
+			Text: s.Sans.ValueString(),
+		}
+		options = append(options, option)
 	}
 
 	defn := kmi.KMIDefinition{
@@ -485,7 +513,7 @@ func (s SSLCert) RequestPayload() ([]byte, error) {
 		Type:          "ssl_cert",
 		ExpirePeriod:  s.ExpiryPeriod.ValueString(),
 		RefreshPeriod: s.RefreshPeriod.ValueString(),
-		Option:        option,
+		Options:       options,
 	}
 	return xml.MarshalIndent(defn, " ", "  ")
 
@@ -512,15 +540,21 @@ type SymetricKey struct {
 }
 
 func (sk SymetricKey) RequestPayload() ([]byte, error) {
+	var options []*kmi.KMIOption
+	if !sk.KeySizeBytes.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "key_size_bytes",
+			Text: fmt.Sprintf("%d", sk.KeySizeBytes.ValueInt64()),
+		}
+		options = append(options, option)
+	}
+
 	defn := kmi.KMIDefinition{
 		AutoGenerate:  boolStr(sk.AutoGenerate.ValueBool()),
 		Type:          "symmetric_key",
 		ExpirePeriod:  sk.ExpiryPeriod.ValueString(),
 		RefreshPeriod: sk.RefreshPeriod.ValueString(),
-		Option: &kmi.KMIOption{
-			Name: "key_size_bytes",
-			Text: fmt.Sprintf("%d", sk.KeySizeBytes.ValueInt64()),
-		},
+		Options:       options,
 	}
 	return xml.MarshalIndent(defn, " ", "  ")
 

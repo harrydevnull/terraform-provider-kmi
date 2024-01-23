@@ -41,14 +41,16 @@ func Test_Definition_SSL(t *testing.T) {
 }
 
 func Test_Definition_SSLCA(t *testing.T) {
+	var options []*kmi.KMIOption
+	options = append(options, &kmi.KMIOption{
+		Name: "is_ca",
+		Text: "1",
+	})
 
 	defn := kmi.KMIDefinition{
 		AutoGenerate: "True",
 		Type:         "ssl_cert",
-		Option: &kmi.KMIOption{
-			Name: "is_ca",
-			Text: "1",
-		},
+		Options:      options,
 	}
 	out, _ := xml.MarshalIndent(defn, "", "")
 	data := []byte(`<definition type="ssl_cert"><auto_generate>True</auto_generate><option name="is_ca">1</option></definition>`)
@@ -78,16 +80,18 @@ func Test_Definition_Opaque(t *testing.T) {
 }
 
 func Test_Definition_SymetricKey(t *testing.T) {
+	var options []*kmi.KMIOption
+	options = append(options, &kmi.KMIOption{
+		Name: "key_size_bytes",
+		Text: "16",
+	})
 
 	defn := kmi.KMIDefinition{
 		Type:          "symmetric_key",
 		ExpirePeriod:  "3 months",
 		RefreshPeriod: "1 months",
 		AutoGenerate:  "True",
-		Option: &kmi.KMIOption{
-			Name: "key_size_bytes",
-			Text: "16",
-		},
+		Options:       options,
 	}
 	out, _ := xml.MarshalIndent(defn, "", "")
 
