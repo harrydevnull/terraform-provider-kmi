@@ -131,7 +131,8 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 	for _, v := range elements {
 		if !v.CommonName.IsNull() {
 			constraintTypes = append(constraintTypes, kmi.ConstraintType{
-				Type: v.CommonName.ValueString(),
+				Type: "common_name",
+				Text: v.CommonName.ValueString(),
 			})
 		}
 
@@ -151,7 +152,7 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	kmiSigner := kmi.Template{
-		Collectionacl: kmi.ApproveClientCollection{
+		Collectionacl: &kmi.ApproveClientCollection{
 			Target: plan.ClientCollectionName.ValueString(),
 		},
 	}
