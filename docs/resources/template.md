@@ -36,7 +36,7 @@ Optional:
 - `common_name` (String) Common name of the certificate. Can be "*" to allow all values, or a string with '*' as a glob character
 - `dns_san` (String) Comma delimited list of acceptable domain names for the Subject Alternative Name extension. Names use '*' as a glob character Default no values allowed
 - `hash_type` (String) Comma delimited list of acceptable hash_types for the signed certificate. Can be '*' to allow all key types. This constraint is ignored for key_types that don't use hashing as part of the signature (ed25519)
-- `ip_san` (String) omma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed
+- `ip_san` (String) Comma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed
 - `key_type` (String) Comma delimited list of acceptable key types for the signed certificate. Can be '*' to allow all key types.Default rsa:2048,rsa:4096,ec:secp256r1
 - `leaf_exceeds_ca_ttl` (String) Boolean flag as to whether or not the signed secret's notAfter date can exceed that of the CA certificate
 - `max_ttl` (String) The maximum period of time that the signed secret can be valid for Default is 90 days

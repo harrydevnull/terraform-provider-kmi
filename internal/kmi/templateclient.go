@@ -25,7 +25,6 @@ func (client *KMIRestClient) CreateTemplateOrSign(cacollectionName string, cadef
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
-	// b, err := ioutil.ReadAll(resp.Body)  Go.1.15 and earlier
 	if err != nil {
 		return err
 	}
@@ -40,7 +39,6 @@ func (client *KMIRestClient) CreateTemplateOrSign(cacollectionName string, cadef
 
 func (client *KMIRestClient) GetTemplate(cacollectionName string, cadefinitionName string, templateName string) (*Template, error) {
 	idenityengineurl := fmt.Sprintf("%s/template/Col=%s/Def=%s/Tmpl=%s", client.Host, cacollectionName, cadefinitionName, templateName)
-	fmt.Println(idenityengineurl)
 
 	resp, err := client.httpclient.Get(idenityengineurl)
 
@@ -66,4 +64,20 @@ func (client *KMIRestClient) GetTemplate(cacollectionName string, cadefinitionNa
 	}
 	return &responseDetails, nil
 
+}
+
+func (client *KMIRestClient) DeleteTemplate(cacollectionName string, cadefinitionName string, templateName string) error {
+
+	idenityengineurl := fmt.Sprintf("%s/template/Col=%s/Def=%s/Tmpl=%s", client.Host, cacollectionName, cadefinitionName, templateName)
+
+	req, err := http.NewRequest("DELETE", idenityengineurl, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.httpclient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
 }

@@ -56,7 +56,7 @@ func (r *templateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 
 			"last_updated": schema.StringAttribute{
 				Computed:    true,
-				Description: " The last time the group was updated. ",
+				Description: " The last time the group was updated.",
 			},
 			"options": schema.ListNestedAttribute{
 				Required: true,
@@ -88,11 +88,11 @@ func (r *templateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 						},
 						"uri_san": schema.StringAttribute{
 							Optional:    true,
-							Description: " Comma delimited list of acceptable URIs for the Subject Alternative Name extension. Names use '*' as a glob character. Default no values allowed",
+							Description: "Comma delimited list of acceptable URIs for the Subject Alternative Name extension. Names use '*' as a glob character. Default no values allowed",
 						},
 						"ip_san": schema.StringAttribute{
 							Optional:    true,
-							Description: " omma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed",
+							Description: "Comma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed",
 						},
 						"key_type": schema.StringAttribute{
 							Optional:    true,
