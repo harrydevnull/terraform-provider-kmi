@@ -32,7 +32,7 @@ func (client *KMIRestClient) CreateDefinition(collectionName string, definitionN
 	return nil
 }
 
-func (client *KMIRestClient) CreateOpaueSecret(collectionName string, definitionName string, opaque OpaqueSecret) error {
+func (client *KMIRestClient) CreateOpaqueSecret(collectionName string, definitionName string, opaque OpaqueSecret) error {
 	idenityengineurl := fmt.Sprintf("%s/secret/Col=%s/Def=%s/Idx=AUTOINDEX", client.Host, collectionName, definitionName)
 	fmt.Println(idenityengineurl)
 
@@ -49,7 +49,7 @@ func (client *KMIRestClient) CreateOpaueSecret(collectionName string, definition
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("error while calling CreateDefinition CreateOpaueSecret api  %s and payload is %v", resp.Status, resp)
+		return fmt.Errorf("error while calling CreateDefinition CreateOpaqueSecret api  %s and payload is %v", resp.Status, resp)
 	}
 	return nil
 }

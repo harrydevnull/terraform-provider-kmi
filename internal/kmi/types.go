@@ -156,13 +156,13 @@ type KMIGroup struct {
 }
 
 type KMIDefinition struct {
-	XMLName       xml.Name   `xml:"definition"`
-	Text          string     `xml:",chardata"`
-	Type          string     `xml:"type,attr"`
-	ExpirePeriod  string     `xml:"expire_period,omitempty"`
-	RefreshPeriod string     `xml:"refresh_period,omitempty"`
-	AutoGenerate  string     `xml:"auto_generate,omitempty"`
-	Option        *KMIOption `xml:"option"`
+	XMLName       xml.Name     `xml:"definition"`
+	Text          string       `xml:",chardata"`
+	Type          string       `xml:"type,attr"`
+	ExpirePeriod  string       `xml:"expire_period,omitempty"`
+	RefreshPeriod string       `xml:"refresh_period,omitempty"`
+	AutoGenerate  string       `xml:"auto_generate,omitempty"`
+	Options       []*KMIOption `xml:"option"`
 }
 
 type KMIDefinitionResponse struct {

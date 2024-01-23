@@ -48,6 +48,15 @@ Required:
 
 - `auto_generate` (Boolean) Auto generate the SSL certificate.
 
+Optional:
+
+- `cn` (String) Common Name of the SSL certificate.
+- `expire_period` (String) The expire period for the symmetric key.
+- `is_ca` (Number) Is the SSL certificate a CA.
+- `issuer` (String) The issuer for the SSL certificate.
+- `refresh_period` (String) The refresh period for the symmetric key.
+- `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
+
 
 <a id="nestedatt--symmetric_key"></a>
 ### Nested Schema for `symmetric_key`
