@@ -208,7 +208,7 @@ type Template struct {
 type TemplateResponse struct {
 	XMLName       xml.Name                 `xml:"template"`
 	Text          string                   `xml:",chardata"`
-	Constraint    []ConstraintTypeResponse `xml:"constraint"`
+	Constraints   []ConstraintTypeResponse `xml:"constraint"`
 	Collectionacl ApproveClientCollection  `xml:"collectionacl"`
 	Name          string                   `xml:"name,attr"`
 	Source        string                   `xml:"source,attr"`
