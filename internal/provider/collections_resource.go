@@ -145,12 +145,12 @@ func (r *collectionsResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Get refreshed order value from HashiCups
+	// Get refreshed order value from KMI
 	kmicollection, err := r.client.GetCollection(state.CollectionName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading HashiCups Order",
-			"Could not read HashiCups order ID "+state.CollectionName.ValueString()+": "+err.Error(),
+			"Error Reading Collection",
+			"Could not read Collection "+state.CollectionName.ValueString()+": "+err.Error(),
 		)
 		return
 	}

@@ -190,11 +190,45 @@ type kmigenerator interface {
 	RequestPayload() ([]byte, error)
 }
 
-type OpaqueSecret struct {
+type BlockSecret struct {
 	XMLName xml.Name `xml:"secret"`
 	Text    string   `xml:",chardata"`
 	Block   struct {
 		Text string `xml:",chardata"`
 		Name string `xml:"name,attr"`
 	} `xml:"block"`
+}
+
+type Template struct {
+	XMLName       xml.Name                 `xml:"template"`
+	Text          string                   `xml:",chardata"`
+	Constraints   []ConstraintType         `xml:"constraint"`
+	Collectionacl *ApproveClientCollection `xml:"collectionacl"`
+}
+type TemplateResponse struct {
+	XMLName       xml.Name                 `xml:"template"`
+	Text          string                   `xml:",chardata"`
+	Constraints   []ConstraintTypeResponse `xml:"constraint"`
+	Collectionacl ApproveClientCollection  `xml:"collectionacl"`
+	Name          string                   `xml:"name,attr"`
+	Source        string                   `xml:"source,attr"`
+	AddDate       string                   `xml:"add_date,attr"`
+	Modified      string                   `xml:"modified,attr"`
+}
+
+type ConstraintTypeResponse struct {
+	Text     string `xml:",chardata"`
+	Type     string `xml:"type,attr"`
+	AddDate  string `xml:"add_date,attr"`
+	Modified string `xml:"modified,attr"`
+}
+
+type ConstraintType struct {
+	Text string `xml:",chardata"`
+	Type string `xml:"type,attr"`
+}
+
+type ApproveClientCollection struct {
+	Text   string `xml:",chardata"`
+	Target string `xml:"target,attr"`
 }

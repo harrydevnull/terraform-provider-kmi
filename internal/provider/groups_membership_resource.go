@@ -108,7 +108,7 @@ func (r *groupsMembershipResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	// Get refreshed order value from HashiCups
+	// Get refreshed order value from KMI Group
 	_, err := r.client.GetGroup(state.GroupName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

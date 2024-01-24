@@ -112,7 +112,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	// Get refreshed order value from HashiCups
+	// Get refreshed order value from KMI Group
 	groupInfo, err := r.client.GetGroup(state.GroupName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
