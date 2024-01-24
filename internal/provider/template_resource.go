@@ -58,50 +58,48 @@ func (r *templateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: " The last time the group was updated.",
 			},
-			"options": schema.ListNestedAttribute{
+			"options": schema.SingleNestedAttribute{
 				Required: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"min_ttl": schema.StringAttribute{
-							Optional:    true,
-							Description: " The minimum period of time that the signed secret can be valid for Default is 7 day ",
-						},
-						"max_ttl": schema.StringAttribute{
-							Optional:    true,
-							Description: " The maximum period of time that the signed secret can be valid for Default is 90 days",
-						},
-						"leaf_exceeds_ca_ttl": schema.StringAttribute{
-							Optional:    true,
-							Description: " Boolean flag as to whether or not the signed secret's notAfter date can exceed that of the CA certificate ",
-						},
-						"allow_ca": schema.StringAttribute{
-							Optional:    true,
-							Description: " Whether the signed secret can have the CA option set in the BasicConstraints extension.",
-						},
-						"common_name": schema.StringAttribute{
-							Optional:    true,
-							Description: " Common name of the certificate. Can be \"*\" to allow all values, or a string with '*' as a glob character",
-						},
-						"dns_san": schema.StringAttribute{
-							Optional:    true,
-							Description: " Comma delimited list of acceptable domain names for the Subject Alternative Name extension. Names use '*' as a glob character Default no values allowed	",
-						},
-						"uri_san": schema.StringAttribute{
-							Optional:    true,
-							Description: "Comma delimited list of acceptable URIs for the Subject Alternative Name extension. Names use '*' as a glob character. Default no values allowed",
-						},
-						"ip_san": schema.StringAttribute{
-							Optional:    true,
-							Description: "Comma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed",
-						},
-						"key_type": schema.StringAttribute{
-							Optional:    true,
-							Description: "Comma delimited list of acceptable key types for the signed certificate. Can be '*' to allow all key types.Default rsa:2048,rsa:4096,ec:secp256r1",
-						},
-						"hash_type": schema.StringAttribute{
-							Optional:    true,
-							Description: "Comma delimited list of acceptable hash_types for the signed certificate. Can be '*' to allow all key types. This constraint is ignored for key_types that don't use hashing as part of the signature (ed25519)",
-						},
+				Attributes: map[string]schema.Attribute{
+					"min_ttl": schema.StringAttribute{
+						Optional:    true,
+						Description: " The minimum period of time that the signed secret can be valid for Default is 7 day ",
+					},
+					"max_ttl": schema.StringAttribute{
+						Optional:    true,
+						Description: " The maximum period of time that the signed secret can be valid for Default is 90 days",
+					},
+					"leaf_exceeds_ca_ttl": schema.StringAttribute{
+						Optional:    true,
+						Description: " Boolean flag as to whether or not the signed secret's notAfter date can exceed that of the CA certificate ",
+					},
+					"allow_ca": schema.StringAttribute{
+						Optional:    true,
+						Description: " Whether the signed secret can have the CA option set in the BasicConstraints extension.",
+					},
+					"common_name": schema.StringAttribute{
+						Optional:    true,
+						Description: " Common name of the certificate. Can be \"*\" to allow all values, or a string with '*' as a glob character",
+					},
+					"dns_san": schema.StringAttribute{
+						Optional:    true,
+						Description: " Comma delimited list of acceptable domain names for the Subject Alternative Name extension. Names use '*' as a glob character Default no values allowed	",
+					},
+					"uri_san": schema.StringAttribute{
+						Optional:    true,
+						Description: "Comma delimited list of acceptable URIs for the Subject Alternative Name extension. Names use '*' as a glob character. Default no values allowed",
+					},
+					"ip_san": schema.StringAttribute{
+						Optional:    true,
+						Description: "Comma delimited list of acceptable IPs for the Subject Alternative Name extension. Can be IP addresses or CIDRs. Default no values allowed",
+					},
+					"key_type": schema.StringAttribute{
+						Optional:    true,
+						Description: "Comma delimited list of acceptable key types for the signed certificate. Can be '*' to allow all key types.Default rsa:2048,rsa:4096,ec:secp256r1",
+					},
+					"hash_type": schema.StringAttribute{
+						Optional:    true,
+						Description: "Comma delimited list of acceptable hash_types for the signed certificate. Can be '*' to allow all key types. This constraint is ignored for key_types that don't use hashing as part of the signature (ed25519)",
 					},
 				},
 			},
@@ -119,27 +117,17 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	elements := plan.Options // Get the list of elements from the plan
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Info(ctx, "Create Template Request")
 
-	//This is totally wrong, but I don't know how to do it better
 	constraintTypes := []kmi.ConstraintType{}
-	for _, v := range elements {
-		if !v.CommonName.IsNull() {
-			constraintTypes = append(constraintTypes, kmi.ConstraintType{
-				Type: "common_name",
-				Text: v.CommonName.ValueString(),
-			})
-		}
 
-	}
-	kmitemplate := kmi.Template{
-		Constraint: constraintTypes,
-	}
+	// Get the list of elements from the plan
+	kmitemplate := generateKmiTemplate(plan, constraintTypes)
 	tflog.SetField(ctx, "Template", kmitemplate)
 	tflog.Debug(ctx, "CreateTemplateOrSign Template")
 	err := r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmitemplate)
@@ -175,6 +163,75 @@ func (r *templateResource) Create(ctx context.Context, req resource.CreateReques
 
 }
 
+func generateKmiTemplate(plan templateResourceModel, constraintTypes []kmi.ConstraintType) kmi.Template {
+	options := plan.Options
+	if !options.CommonName.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "common_name",
+			Text: options.CommonName.ValueString(),
+		})
+	}
+	if !options.Dns_san.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "dns_san",
+			Text: options.Dns_san.ValueString(),
+		})
+	}
+	if !options.Uri_san.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "uri_san",
+			Text: options.Uri_san.ValueString(),
+		})
+	}
+	if !options.Ip_san.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "ip_san",
+			Text: options.Ip_san.ValueString(),
+		})
+	}
+	if !options.Key_type.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "key_type",
+			Text: options.Key_type.ValueString(),
+		})
+	}
+	if !options.Hash_type.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "hash_type",
+			Text: options.Hash_type.ValueString(),
+		})
+	}
+	if !options.Allow_ca.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "allow_ca",
+			Text: options.Allow_ca.ValueString(),
+		})
+	}
+	if !options.Leaf_exceeds_ca_ttl.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "leaf_exceeds_ca_ttl",
+			Text: options.Leaf_exceeds_ca_ttl.ValueString(),
+		})
+	}
+	if !options.Max_ttl.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "max_ttl",
+			Text: options.Max_ttl.ValueString(),
+		})
+	}
+	if !options.Minttl.IsNull() {
+		constraintTypes = append(constraintTypes, kmi.ConstraintType{
+			Type: "min_ttl",
+			Text: options.Minttl.ValueString(),
+		})
+	}
+
+	kmitemplate := kmi.Template{
+		Constraints: constraintTypes,
+	}
+	return kmitemplate
+}
+
 // Read refreshes the Terraform state with the latest data.
 func (r *templateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state templateResourceModel
@@ -193,16 +250,41 @@ func (r *templateResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	for _, v := range templateDetails.Constraint {
-		// state.Options[v.Text] = types.String(v.Text)
+	state.Options = &templateResourceModelOptions{}
+	for _, v := range templateDetails.Constraints {
 		if (v.Type == "common_name") && (v.Text != "*") {
-			state.Options = append(state.Options, templateResourceModelOptions{
-				CommonName: types.StringValue(v.Text),
-			})
+			state.Options.CommonName = types.StringValue(v.Text)
 		}
+		if v.Type == "dns_san" {
+			state.Options.Dns_san = types.StringValue(v.Text)
+		}
+		if v.Type == "uri_san" {
+			state.Options.Uri_san = types.StringValue(v.Text)
+		}
+		if v.Type == "ip_san" {
+			state.Options.Ip_san = types.StringValue(v.Text)
+		}
+		if v.Type == "key_type" {
+			state.Options.Key_type = types.StringValue(v.Text)
+		}
+		if v.Type == "hash_type" {
+			state.Options.Hash_type = types.StringValue(v.Text)
+		}
+		if v.Type == "allow_ca" {
+			state.Options.Allow_ca = types.StringValue(v.Text)
+		}
+		if v.Type == "leaf_exceeds_ca_ttl" {
+			state.Options.Leaf_exceeds_ca_ttl = types.StringValue(v.Text)
+		}
+		if v.Type == "max_ttl" {
+			state.Options.Max_ttl = types.StringValue(v.Text)
+		}
+		if v.Type == "min_ttl" {
+			state.Options.Minttl = types.StringValue(v.Text)
+		}
+
 	}
-	optionsfromKmi := []templateResourceModelOptions{}
-	state.Options = optionsfromKmi
+
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -221,7 +303,6 @@ func (r *templateResource) Update(ctx context.Context, req resource.UpdateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	elements := plan.Options // Get the list of elements from the plan
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -230,18 +311,9 @@ func (r *templateResource) Update(ctx context.Context, req resource.UpdateReques
 
 	//This is totally wrong, but I don't know how to do it better
 	constraintTypes := []kmi.ConstraintType{}
-	for _, v := range elements {
-		if !v.CommonName.IsNull() {
-			constraintTypes = append(constraintTypes, kmi.ConstraintType{
-				Type: "common_name",
-				Text: v.CommonName.ValueString(),
-			})
-		}
 
-	}
-	kmitemplate := kmi.Template{
-		Constraint: constraintTypes,
-	}
+	// Get the list of elements from the plan
+	kmitemplate := generateKmiTemplate(plan, constraintTypes)
 	tflog.SetField(ctx, "Template", kmitemplate)
 	tflog.Debug(ctx, "CreateTemplateOrSign Template")
 	err := r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmitemplate)
@@ -316,16 +388,15 @@ func (r *templateResource) Configure(_ context.Context, req resource.ConfigureRe
 }
 
 type templateResourceModel struct {
-	CACollectionName     types.String `tfsdk:"ca_collection"`
-	CADefinitionName     types.String `tfsdk:"ca_definition"`
-	TemplateName         types.String `tfsdk:"template_name"`
-	ClientCollectionName types.String `tfsdk:"client_collection"`
-
-	Options     []templateResourceModelOptions `tfsdk:"options"`
-	LastUpdated types.String                   `tfsdk:"last_updated"`
+	CACollectionName     types.String                  `tfsdk:"ca_collection"`
+	CADefinitionName     types.String                  `tfsdk:"ca_definition"`
+	TemplateName         types.String                  `tfsdk:"template_name"`
+	ClientCollectionName types.String                  `tfsdk:"client_collection"`
+	Options              *templateResourceModelOptions `tfsdk:"options"`
+	LastUpdated          types.String                  `tfsdk:"last_updated"`
 }
 type templateResourceModelOptions struct {
-	Min_ttl             types.String `tfsdk:"min_ttl"`
+	Minttl              types.String `tfsdk:"min_ttl"`
 	Max_ttl             types.String `tfsdk:"max_ttl"`
 	Leaf_exceeds_ca_ttl types.String `tfsdk:"leaf_exceeds_ca_ttl"`
 	Allow_ca            types.String `tfsdk:"allow_ca"`

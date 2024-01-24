@@ -202,7 +202,7 @@ type BlockSecret struct {
 type Template struct {
 	XMLName       xml.Name                 `xml:"template"`
 	Text          string                   `xml:",chardata"`
-	Constraint    []ConstraintType         `xml:"constraint"`
+	Constraints   []ConstraintType         `xml:"constraint"`
 	Collectionacl *ApproveClientCollection `xml:"collectionacl"`
 }
 type TemplateResponse struct {
