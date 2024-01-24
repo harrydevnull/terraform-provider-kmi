@@ -113,7 +113,7 @@ func (r *templateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 func (r *templateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan templateResourceModel
 	tflog.SetField(ctx, "Template", plan)
-	tflog.Info(ctx, "Create Template Request fist")
+	tflog.Info(ctx, "Create Template Request first")
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -213,10 +213,87 @@ func (r *templateResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *templateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan templateResourceModel
+	tflog.SetField(ctx, "Template", plan)
+	tflog.Info(ctx, "Update Template Request first line")
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	elements := plan.Options // Get the list of elements from the plan
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Info(ctx, "Create Template Request")
+
+	//This is totally wrong, but I don't know how to do it better
+	constraintTypes := []kmi.ConstraintType{}
+	for _, v := range elements {
+		if !v.CommonName.IsNull() {
+			constraintTypes = append(constraintTypes, kmi.ConstraintType{
+				Type: "common_name",
+				Text: v.CommonName.ValueString(),
+			})
+		}
+
+	}
+	kmitemplate := kmi.Template{
+		Constraint: constraintTypes,
+	}
+	tflog.SetField(ctx, "Template", kmitemplate)
+	tflog.Debug(ctx, "CreateTemplateOrSign Template")
+	err := r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmitemplate)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating Template",
+			"Could not create template, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	kmiSigner := kmi.Template{
+		Collectionacl: &kmi.ApproveClientCollection{
+			Target: plan.ClientCollectionName.ValueString(),
+		},
+	}
+	tflog.Debug(ctx, "CreateTemplateOrSign CSR signer")
+	err = r.client.CreateTemplateOrSign(plan.CACollectionName.ValueString(), plan.CADefinitionName.ValueString(), plan.TemplateName.ValueString(), kmiSigner)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error signing the request",
+			"Could not signing the request, unexpected error: "+err.Error(),
+		)
+		return
+	}
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *templateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state templateResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Delete existing order
+	err := r.client.DeleteTemplate(state.CACollectionName.ValueString(), state.CADefinitionName.ValueString(), state.TemplateName.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Deleting Templates resource",
+			"Could not delete template, unexpected error: "+err.Error(),
+		)
+		return
+	}
 }
 
 func (r *templateResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
