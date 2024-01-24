@@ -20,7 +20,7 @@ description: |-
 - `ca_collection` (String) CA collection name to be created on KMI
 - `ca_definition` (String) CA definition name to be created on KMI
 - `client_collection` (String) Client collection name to be created on KMI
-- `options` (Attributes List) (see [below for nested schema](#nestedatt--options))
+- `options` (Attributes) (see [below for nested schema](#nestedatt--options))
 - `template_name` (String) Certificate Signing Request template name to be created on KMI
 
 ### Read-Only
