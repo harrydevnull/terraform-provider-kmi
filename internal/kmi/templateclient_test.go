@@ -35,7 +35,7 @@ func Test_TemplateMarshalling(t *testing.T) {
 	if !reflect.DeepEqual(e1.Collectionacl.Target, "PIM_SECRETS") {
 		t.Errorf("Marshalling() = %v, want %v", e1.Collectionacl.Target, "PIM_SECRETS")
 	}
-	if !reflect.DeepEqual(e1.Constraint[0].Text, "instance-validator") {
+	if !reflect.DeepEqual(e1.Constraints[0].Text, "instance-validator") {
 		t.Errorf("Marshalling() = %v, want %v", e1.Collectionacl.Target, "instance-validator")
 	}
 
