@@ -26,6 +26,7 @@ description: |-
 - `opaque` (String) The Opaque definition to create.
 - `ssl_cert` (Attributes) The SSL certificate to create. (see [below for nested schema](#nestedatt--ssl_cert))
 - `symmetric_key` (Attributes) (see [below for nested schema](#nestedatt--symmetric_key))
+- `transparent` (String) The Transparent definition to create.
 
 ### Read-Only
 
@@ -50,10 +51,12 @@ Required:
 
 Optional:
 
+- `cn` (String) Common Name of the SSL certificate.
 - `expire_period` (String) The expire period for the symmetric key.
-- `is_ca` (Boolean) Is the SSL certificate a CA.
+- `is_ca` (Number) Is the SSL certificate a CA.
 - `issuer` (String) The issuer for the SSL certificate.
 - `refresh_period` (String) The refresh period for the symmetric key.
+- `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
 
 
 <a id="nestedatt--symmetric_key"></a>
