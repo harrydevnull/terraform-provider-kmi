@@ -219,6 +219,9 @@ func Test_BlockSecretUnmarshalling(t *testing.T) {
 	if !reflect.DeepEqual(unmarshalled.Text, "") {
 		t.Errorf("Marshalling() = %v, want %v", unmarshalled.Text, "\"\"")
 	}
+	if !reflect.DeepEqual(unmarshalled.Block.B64Encoded, "true") {
+		t.Errorf("Marshalling() = %v, want %v", unmarshalled.Block.B64Encoded, "true")
+	}
 }
 
 func Test_BlockSecretMarshalling(t *testing.T) {
