@@ -194,8 +194,9 @@ type BlockSecret struct {
 	XMLName xml.Name `xml:"secret"`
 	Text    string   `xml:",chardata"`
 	Block   struct {
-		Text string `xml:",chardata"`
-		Name string `xml:"name,attr"`
+		Text       string `xml:",chardata"`
+		Name       string `xml:"name,attr"`
+		B64Encoded string `xml:"b64encoded,attr"`
 	} `xml:"block"`
 }
 

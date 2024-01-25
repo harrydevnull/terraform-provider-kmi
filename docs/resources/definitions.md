@@ -23,6 +23,7 @@ description: |-
 ### Optional
 
 - `azure_sp` (Attributes) The Azure Service Principal to create. (see [below for nested schema](#nestedatt--azure_sp))
+- `b64encoded` (Boolean) Should the secret be Base64-encoded? If it's not set, then is "false"
 - `opaque` (String) The Opaque definition to create.
 - `ssl_cert` (Attributes) The SSL certificate to create. (see [below for nested schema](#nestedatt--ssl_cert))
 - `symmetric_key` (Attributes) (see [below for nested schema](#nestedatt--symmetric_key))
@@ -51,11 +52,13 @@ Required:
 
 Optional:
 
+- `ca_name` (String) KMI path to the template used to sign the certificate by the CA.
 - `cn` (String) Common Name of the SSL certificate.
 - `expire_period` (String) The expire period for the symmetric key.
 - `is_ca` (Number) Is the SSL certificate a CA.
 - `issuer` (String) The issuer for the SSL certificate.
 - `refresh_period` (String) The refresh period for the symmetric key.
+- `signaclgroup` (String) Group that is eligible to sign the certificate. Required for CA definition setup.
 - `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
 
 

@@ -86,6 +86,14 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "Subject Alternative Names of the SSL certificate. ",
 					},
+					"ca_name": schema.StringAttribute{
+						Optional:    true,
+						Description: "KMI path to the template used to sign the certificate by the CA.",
+					},
+					"signaclgroup": schema.StringAttribute{
+						Optional:    true,
+						Description: "Group that is eligible to sign the certificate. Required for CA definition setup.",
+					},
 				},
 				Optional:    true,
 				Description: "The SSL certificate to create. ",
@@ -116,6 +124,10 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"opaque": schema.StringAttribute{
 				Optional:    true,
 				Description: "The Opaque definition to create. ",
+			},
+			"b64encoded": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Should the secret be Base64-encoded? If it's not set, then is \"false\"",
 			},
 			"transparent": schema.StringAttribute{
 				Optional:    true,
@@ -209,11 +221,13 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 		}
 		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
 			Block: struct {
-				Text string "xml:\",chardata\""
-				Name string "xml:\"name,attr\""
+				Text       string "xml:\",chardata\""
+				Name       string "xml:\"name,attr\""
+				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name: "opaque",
-				Text: plan.Opaque.ValueString(),
+				Name:       "opaque",
+				Text:       plan.Opaque.ValueString(),
+				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
 		if err != nil {
@@ -238,11 +252,13 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 		}
 		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
 			Block: struct {
-				Text string "xml:\",chardata\""
-				Name string "xml:\"name,attr\""
+				Text       string "xml:\",chardata\""
+				Name       string "xml:\"name,attr\""
+				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name: "transparent",
-				Text: plan.Transparent.ValueString(),
+				Name:       "opaque",
+				Text:       plan.Opaque.ValueString(),
+				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
 		if err != nil {
@@ -370,11 +386,13 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 		}
 		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
 			Block: struct {
-				Text string "xml:\",chardata\""
-				Name string "xml:\"name,attr\""
+				Text       string "xml:\",chardata\""
+				Name       string "xml:\"name,attr\""
+				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name: "opaque",
-				Text: plan.Opaque.ValueString(),
+				Name:       "opaque",
+				Text:       plan.Opaque.ValueString(),
+				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
 		if err != nil {
@@ -400,11 +418,13 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 		}
 		err = r.client.CreateBlockSecret(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), kmi.BlockSecret{
 			Block: struct {
-				Text string "xml:\",chardata\""
-				Name string "xml:\"name,attr\""
+				Text       string "xml:\",chardata\""
+				Name       string "xml:\"name,attr\""
+				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name: "transparent",
-				Text: plan.Transparent.ValueString(),
+				Name:       "opaque",
+				Text:       plan.Opaque.ValueString(),
+				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
 		if err != nil {
@@ -514,6 +534,7 @@ type definitionResourceModel struct {
 	SSLCert        *SSLCert     `tfsdk:"ssl_cert"`
 	AzureSP        *AzureSP     `tfsdk:"azure_sp"`
 	Opaque         types.String `tfsdk:"opaque"`
+	B64Encoded     types.Bool   `tfsdk:"b64encoded"`
 	Transparent    types.String `tfsdk:"transparent"`
 	SymetricKey    *SymetricKey `tfsdk:"symmetric_key"`
 	Options        types.List   `tfsdk:"options"`
@@ -567,6 +588,8 @@ type SSLCert struct {
 	IsCA          types.Int64  `tfsdk:"is_ca"`
 	Cn            types.String `tfsdk:"cn"`
 	Sans          types.String `tfsdk:"subj_alt_names"`
+	CAName        types.String `tfsdk:"ca_name"`
+	SignACLGroup  types.String `tfsdk:"signaclgroup"`
 }
 
 func (s SSLCert) RequestPayload() ([]byte, error) {
@@ -574,6 +597,7 @@ func (s SSLCert) RequestPayload() ([]byte, error) {
 	if !s.Issuer.IsNull() && !s.IsCA.IsNull() {
 		return nil, fmt.Errorf("IsCA should not be set if Issuer is set ")
 	}
+
 	var options []*kmi.KMIOption
 	if !s.IsCA.IsNull() {
 		option := &kmi.KMIOption{
@@ -600,6 +624,20 @@ func (s SSLCert) RequestPayload() ([]byte, error) {
 		option := &kmi.KMIOption{
 			Name: "subj_alt_names",
 			Text: s.Sans.ValueString(),
+		}
+		options = append(options, option)
+	}
+	if !s.SignACLGroup.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "signaclgroup:" + s.SignACLGroup.ValueString(),
+			Text: "true",
+		}
+		options = append(options, option)
+	}
+	if !s.CAName.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "ca_name",
+			Text: s.CAName.ValueString(),
 		}
 		options = append(options, option)
 	}
