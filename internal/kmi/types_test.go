@@ -204,3 +204,44 @@ func Test_GroupsUnMarshalling(t *testing.T) {
 	}
 
 }
+
+func Test_BlockSecretUnmarshalling(t *testing.T) {
+	data := []byte(`<secret><block name="opaque" b64encoded="true">dGVzdC1lbmNvZGluZwo=</block></secret>`)
+	var unmarshalled BlockSecret
+	err := xml.Unmarshal(data, &unmarshalled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(unmarshalled.Block.Text, "dGVzdC1lbmNvZGluZwo=") {
+		t.Errorf("Marshalling() = %v, want %v", unmarshalled.Block.Text, "dGVzdC1lbmNvZGluZwo=")
+	}
+	if !reflect.DeepEqual(unmarshalled.Text, "") {
+		t.Errorf("Marshalling() = %v, want %v", unmarshalled.Text, "\"\"")
+	}
+}
+
+func Test_BlockSecretMarshalling(t *testing.T) {
+	blockSecret := BlockSecret{
+		Text: "",
+		Block: struct {
+			Text       string `xml:",chardata"`
+			Name       string `xml:"name,attr"`
+			B64Encoded string `xml:"b64encoded,attr"`
+		}{
+			Text:       "dGVzdC1lbmNvZGluZwo=",
+			Name:       "opaque",
+			B64Encoded: "true",
+		},
+	}
+
+	out, err := xml.Marshal(blockSecret)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data := []byte(`<secret><block name="opaque" b64encoded="true">dGVzdC1lbmNvZGluZwo=</block></secret>`)
+	if !reflect.DeepEqual(out, data) {
+		t.Errorf("Marshalling() = %v, want %v", string(out), string(data))
+	}
+}
