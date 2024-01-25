@@ -256,8 +256,8 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 				Name       string "xml:\"name,attr\""
 				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name:       "opaque",
-				Text:       plan.Opaque.ValueString(),
+				Name:       "transparent",
+				Text:       plan.Transparent.ValueString(),
 				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
@@ -422,8 +422,8 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 				Name       string "xml:\"name,attr\""
 				B64Encoded string `xml:"b64encoded,attr"`
 			}{
-				Name:       "opaque",
-				Text:       plan.Opaque.ValueString(),
+				Name:       "transparent",
+				Text:       plan.Transparent.ValueString(),
 				B64Encoded: boolStr(plan.B64Encoded.ValueBool()),
 			},
 		})
