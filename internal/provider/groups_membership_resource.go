@@ -170,14 +170,16 @@ func (r *groupsMembershipResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	// Delete existing order
-	err := r.client.DeleteGroup(state.GroupName.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Deleting KMI Group",
-			"Could not group, unexpected error: "+err.Error(),
-		)
-		return
+	for _, member := range state.Members {
+		err := r.client.DeleteGroupMembership(state.GroupName.ValueString(), member.Name.ValueString())
+		//err := r.client.DeleteGroup(state.GroupName.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error Deleting KMI Group",
+				"Could not group, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 }
 
