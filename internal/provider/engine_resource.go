@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"terraform-provider-kmi/internal/kmi"
 	"time"
@@ -148,6 +149,7 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 // Read refreshes the Terraform state with the latest data.
 func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state EngineResourceModel
+	var workloads []WorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -162,10 +164,6 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 			"Could not create Identity, unexpected error: "+err.Error(),
 		)
 		return
-	}
-
-	if len(identityEngine.Workload) != 0 {
-		state.Workloads = []WorkloadResourceModel{}
 	}
 
 	for _, projectionafter := range identityEngine.Workload {
@@ -201,7 +199,11 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 			Namespace:      types.StringValue(k8Namepace),
 			Region:         types.StringValue(kmiprojection.Region.Text),
 		}
-		state.Workloads = append(state.Workloads, wrkmodel)
+		workloads = append(workloads, wrkmodel)
+	}
+
+	if reflect.DeepEqual(workloads, state.Workloads) {
+		state.Workloads = workloads
 	}
 
 	diags = resp.State.Set(ctx, &state)
@@ -214,8 +216,8 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
 	var plan EngineResourceModel
+	var workloadModels []WorkloadResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -267,8 +269,7 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	// for wrkIndex, projectionafter := range identityEngine.Workload {
-	for wrkIndex, projectionafter := range plan.Workloads {
+	for _, projectionafter := range plan.Workloads {
 		kmiprojection, err := r.client.GetWorkloadDetails(plan.AccountName.ValueString(), plan.Engine.ValueString(), projectionafter.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -287,7 +288,11 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 			Namespace:      types.StringValue(k8Namepace),
 			Region:         types.StringValue(kmiprojection.Region.Text),
 		}
-		plan.Workloads[wrkIndex] = wrkmodel
+		workloadModels = append(workloadModels, wrkmodel)
+	}
+
+	if reflect.DeepEqual(workloadModels, plan.Workloads) {
+		plan.Workloads = workloadModels
 	}
 	// plan.LastUpdated = identityEngine.Published
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
