@@ -94,6 +94,20 @@ func (client *KMIRestClient) DeleteGroup(groupName string) error {
 	return nil
 }
 
+func (client *KMIRestClient) DeleteGroupMembership(groupName string, child string) error {
+	idenityengineurl := fmt.Sprintf("%s/group_membership/Parent=%s/Child=%s", client.Host, groupName, child)
+	req, err := http.NewRequest("DELETE", idenityengineurl, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.httpclient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 type GroupRequest struct {
 	XMLName xml.Name `xml:"group"`
 	Text    string   `xml:",chardata"`
