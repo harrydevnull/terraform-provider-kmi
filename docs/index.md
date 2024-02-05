@@ -28,6 +28,9 @@ provider "kmi" {
 ### Optional
 
 - `akamai_ca` (String)
+- `akamai_ca_path` (String)
 - `api_crt` (String)
+- `api_crt_path` (String)
 - `api_key` (String, Sensitive)
+- `api_key_path` (String, Sensitive)
 - `host` (String)

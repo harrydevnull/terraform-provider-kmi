@@ -19,7 +19,7 @@ type KMIRestClient struct {
 	httpclient *http.Client
 }
 
-func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string) (*KMIRestClient, error) {
+func NewKMIRestClientPath(host string, apiKey string, apiCrt string, akamaiCA string) (*KMIRestClient, error) {
 
 	cert, err := tls.LoadX509KeyPair(apiCrt, apiKey)
 	if err != nil {
@@ -33,6 +33,27 @@ func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string
 	}
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+	}
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	client := &http.Client{Transport: transport}
+
+	return &KMIRestClient{Host: host, ApiKey: apiKey, ApiCrt: apiCrt, AkamaiCA: akamaiCA, httpclient: client}, nil
+}
+
+func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string) (*KMIRestClient, error) {
+
+	cert, err := tls.X509KeyPair([]byte(apiCrt), []byte(apiKey))
+	if err != nil {
+		return nil, err
+	}
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM([]byte(akamaiCA))
 
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
