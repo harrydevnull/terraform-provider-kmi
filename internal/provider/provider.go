@@ -59,16 +59,29 @@ func (p *kmiProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 			"akamai_ca": schema.StringAttribute{
 				Optional: true,
 			},
+			"api_key_path": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
+			"api_crt_path": schema.StringAttribute{
+				Optional: true,
+			},
+			"akamai_ca_path": schema.StringAttribute{
+				Optional: true,
+			},
 		},
 	}
 }
 
 // kmiProviderModel maps provider schema data to a Go type.
 type kmiProviderModel struct {
-	Host     types.String `tfsdk:"host"`
-	ApiKey   types.String `tfsdk:"api_key"`
-	ApiCrt   types.String `tfsdk:"api_crt"`
-	AkamaiCA types.String `tfsdk:"akamai_ca"`
+	Host         types.String `tfsdk:"host"`
+	ApiKey       types.String `tfsdk:"api_key"`
+	ApiCrt       types.String `tfsdk:"api_crt"`
+	AkamaiCA     types.String `tfsdk:"akamai_ca"`
+	ApiKeyPath   types.String `tfsdk:"api_key_path"`
+	ApiCrtPath   types.String `tfsdk:"api_crt_path"`
+	AkamaiCAPath types.String `tfsdk:"akamai_ca_path"`
 }
 
 // Configure prepares a kmi API client for data sources and resources.
@@ -116,6 +129,33 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		)
 	}
 
+	if config.AkamaiCAPath.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("akamai_ca_path"),
+			"Unknown KMI akamai_ca_path",
+			"The provider cannot create the KMI API client as there is an unknown configuration value for the KMI_AKAMAI_CA_PATH. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the KMI_AKAMAI_CA_PATH environment variable.",
+		)
+	}
+
+	if config.AkamaiCAPath.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_crt_path"),
+			"Unknown KMI akamai_ca_path",
+			"The provider cannot create the KMI API client as there is an unknown configuration value for the KMI_API_CRT_PATH. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the KMI_API_CRT_PATH environment variable.",
+		)
+	}
+
+	if config.AkamaiCAPath.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key_path"),
+			"Unknown KMI akamai_ca_path",
+			"The provider cannot create the KMI API client as there is an unknown configuration value for the KMI_API_KEY_PATH. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the KMI_API_KEY_PATH environment variable.",
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -124,6 +164,9 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	apikey := os.Getenv("KMI_API_KEY")
 	apicrt := os.Getenv("KMI_API_CRT")
 	akamaica := os.Getenv("KMI_AKAMAI_CA")
+	apikeyPath := os.Getenv("KMI_API_KEY_PATH")
+	apicrtPath := os.Getenv("KMI_API_CRT_PATH")
+	akamaicaPath := os.Getenv("KMI_AKAMAI_CA_PATH")
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -141,6 +184,18 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		akamaica = config.AkamaiCA.ValueString()
 	}
 
+	if !config.AkamaiCAPath.IsNull() {
+		akamaicaPath = config.AkamaiCAPath.ValueString()
+	}
+
+	if !config.ApiKeyPath.IsNull() {
+		apikeyPath = config.ApiKeyPath.ValueString()
+	}
+
+	if !config.ApiCrtPath.IsNull() {
+		apicrtPath = config.ApiCrtPath.ValueString()
+	}
+
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("host"),
@@ -151,32 +206,32 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		)
 	}
 
-	if apikey == "" {
+	if apikey == "" && apikeyPath == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
 			"Missing KMI API Key",
 			"The provider cannot create the KMI API client as there is a missing or empty value for the kmi API host. "+
-				"Set the host value in the configuration or use the KMI_API_KEY environment variable. "+
+				"Set the host value in the configuration or use the KMI_API_KEY/KMI_API_KEY_PATH environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
 
-	if apicrt == "" {
+	if apicrt == "" && apicrtPath == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_crt"),
 			"Missing KMI API Certificate",
 			"The provider cannot create the KMI API client as there is a missing or empty value for the kmi API host. "+
-				"Set the host value in the configuration or use the KMI_API_CRT environment variable. "+
+				"Set the host value in the configuration or use the KMI_API_CRT/KMI_API_CRT_PATH environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
 
-	if akamaica == "" {
+	if akamaica == "" && akamaicaPath == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("akamai_ca"),
 			"Missing KMI Certificate Authority",
 			"The provider cannot create the KMI API client as there is a missing or empty value for the kmi API host. "+
-				"Set the host value in the configuration or use the KMI_AKAMAI_CA environment variable. "+
+				"Set the host value in the configuration or use the KMI_AKAMAI_CA/KMI_AKAMAI_CA_PATH environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
@@ -189,27 +244,46 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	ctx = tflog.SetField(ctx, "kmi_key", apikey)
 	ctx = tflog.SetField(ctx, "kmi_crt", apicrt)
 	ctx = tflog.SetField(ctx, "kmi_ca", akamaica)
+	ctx = tflog.SetField(ctx, "kmi_key_path", apikeyPath)
+	ctx = tflog.SetField(ctx, "kmi_crt_path", apicrtPath)
+	ctx = tflog.SetField(ctx, "kmi_ca_path", akamaicaPath)
 
 	tflog.Debug(ctx, "Creating KMI client")
 
-	client, err := kmi.NewKMIRestClient(host, apikey, apicrt, akamaica)
-	tflog.Info(ctx, "Configured KMI client", map[string]any{"success": true})
+	// setting a path variable takes a precedence over having it configured with the string
+	if apikeyPath != "" {
+		client, err := kmi.NewKMIRestClientPath(host, apikeyPath, apicrtPath, akamaicaPath)
+		tflog.Info(ctx, "Configured KMI client", map[string]any{"success": true})
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create kmi API Client",
-			"An unexpected error occurred when creating the kmi API client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
-				"kmi Client Error: "+err.Error(),
-		)
-		return
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to Create kmi API Client",
+				"An unexpected error occurred when creating the kmi API client. "+
+					"If the error is not clear, please contact the provider developers.\n\n"+
+					"kmi Client Error: "+err.Error(),
+			)
+			return
+		}
+
+		resp.DataSourceData = client
+		resp.ResourceData = client
+	} else {
+		client, err := kmi.NewKMIRestClient(host, apikey, apicrt, akamaica)
+		tflog.Info(ctx, "Configured KMI client", map[string]any{"success": true})
+
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to Create kmi API Client",
+				"An unexpected error occurred when creating the kmi API client. "+
+					"If the error is not clear, please contact the provider developers.\n\n"+
+					"kmi Client Error: "+err.Error(),
+			)
+			return
+		}
+
+		resp.DataSourceData = client
+		resp.ResourceData = client
 	}
-
-	// Make the kmi client available during DataSource and Resource
-	// type Configure methods.
-	resp.DataSourceData = client
-	resp.ResourceData = client
-
 }
 
 // DataSources defines the data sources implemented in the provider.
