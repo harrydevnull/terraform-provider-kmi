@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -19,7 +20,7 @@ type KMIRestClient struct {
 	httpclient *http.Client
 }
 
-func NewKMIRestClientPath(host string, apiKey string, apiCrt string, akamaiCA string) (*KMIRestClient, error) {
+func NewKMIRestClientPath(host string, apiKey string, apiCrt string, akamaiCA string, proxyUrl string) (*KMIRestClient, error) {
 
 	cert, err := tls.LoadX509KeyPair(apiCrt, apiKey)
 	if err != nil {
@@ -39,13 +40,21 @@ func NewKMIRestClientPath(host string, apiKey string, apiCrt string, akamaiCA st
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 	}
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
+
+	proxy, err := CreateProxy(proxyUrl)
+	if err != nil {
+		return nil, err
+	}
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+		Proxy:           proxy,
+	}
 	client := &http.Client{Transport: transport}
 
 	return &KMIRestClient{Host: host, ApiKey: apiKey, ApiCrt: apiCrt, AkamaiCA: akamaiCA, httpclient: client}, nil
 }
 
-func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string) (*KMIRestClient, error) {
+func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string, proxyUrl string) (*KMIRestClient, error) {
 
 	cert, err := tls.X509KeyPair([]byte(apiCrt), []byte(apiKey))
 	if err != nil {
@@ -60,10 +69,29 @@ func NewKMIRestClient(host string, apiKey string, apiCrt string, akamaiCA string
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 	}
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
+
+	proxy, err := CreateProxy(proxyUrl)
+	if err != nil {
+		return nil, err
+	}
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+		Proxy:           proxy,
+	}
 	client := &http.Client{Transport: transport}
 
 	return &KMIRestClient{Host: host, ApiKey: apiKey, ApiCrt: apiCrt, AkamaiCA: akamaiCA, httpclient: client}, nil
+}
+
+func CreateProxy(proxyUrl string) (func(*http.Request) (*url.URL, error), error) {
+	if proxyUrl != "" {
+		proxy, err := url.Parse(proxyUrl)
+		if err != nil {
+			return nil, err
+		}
+		return http.ProxyURL(proxy), nil
+	}
+	return nil, nil
 }
 
 // GetAccountDetails returns the account details for the given account.
