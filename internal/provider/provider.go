@@ -69,6 +69,9 @@ func (p *kmiProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 			"akamai_ca_path": schema.StringAttribute{
 				Optional: true,
 			},
+			"proxy_host": schema.StringAttribute{
+				Optional: true,
+			},
 		},
 	}
 }
@@ -82,6 +85,7 @@ type kmiProviderModel struct {
 	ApiKeyPath   types.String `tfsdk:"api_key_path"`
 	ApiCrtPath   types.String `tfsdk:"api_crt_path"`
 	AkamaiCAPath types.String `tfsdk:"akamai_ca_path"`
+	ProxyHost    types.String `tfsdk:"proxy_host"`
 }
 
 // Configure prepares a kmi API client for data sources and resources.
@@ -167,6 +171,7 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	apikeyPath := os.Getenv("KMI_API_KEY_PATH")
 	apicrtPath := os.Getenv("KMI_API_CRT_PATH")
 	akamaicaPath := os.Getenv("KMI_AKAMAI_CA_PATH")
+	proxyHost := os.Getenv("KMI_PROXY_HOST")
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -194,6 +199,10 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	if !config.ApiCrtPath.IsNull() {
 		apicrtPath = config.ApiCrtPath.ValueString()
+	}
+
+	if !config.ProxyHost.IsNull() {
+		proxyHost = config.ProxyHost.ValueString()
 	}
 
 	if host == "" {
@@ -247,12 +256,13 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	ctx = tflog.SetField(ctx, "kmi_key_path", apikeyPath)
 	ctx = tflog.SetField(ctx, "kmi_crt_path", apicrtPath)
 	ctx = tflog.SetField(ctx, "kmi_ca_path", akamaicaPath)
+	ctx = tflog.SetField(ctx, "proxy_host", proxyHost)
 
 	tflog.Debug(ctx, "Creating KMI client")
 
 	// setting a path variable takes a precedence over having it configured with the string
 	if apikeyPath != "" {
-		client, err := kmi.NewKMIRestClientPath(host, apikeyPath, apicrtPath, akamaicaPath)
+		client, err := kmi.NewKMIRestClientPath(host, apikeyPath, apicrtPath, akamaicaPath, proxyHost)
 		tflog.Info(ctx, "Configured KMI client", map[string]any{"success": true})
 
 		if err != nil {
@@ -268,7 +278,7 @@ func (p *kmiProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		resp.DataSourceData = client
 		resp.ResourceData = client
 	} else {
-		client, err := kmi.NewKMIRestClient(host, apikey, apicrt, akamaica)
+		client, err := kmi.NewKMIRestClient(host, apikey, apicrt, akamaica, proxyHost)
 		tflog.Info(ctx, "Configured KMI client", map[string]any{"success": true})
 
 		if err != nil {

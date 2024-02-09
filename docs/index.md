@@ -34,3 +34,4 @@ provider "kmi" {
 - `api_key` (String, Sensitive)
 - `api_key_path` (String, Sensitive)
 - `host` (String)
+- `proxy_host` (String)
