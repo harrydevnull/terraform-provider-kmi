@@ -92,11 +92,8 @@ func (r *workloadResource) Create(ctx context.Context, req resource.CreateReques
 			Text: plan.LinodeLabel.ValueString(),
 		},
 	}
-	tflog.Info(ctx, "Create workload payload %v\n", map[string]interface{}{
-		"Projection":  kmiworkload.Projection,
-		"Region":      kmiworkload.Region.Text,
-		"LinodeLabel": kmiworkload.LinodeLabel.Text,
-	})
+	tflog.Info(ctx, "Create workload payload %v\n")
+
 	_, err := r.client.CreateWorkloadDetails(plan.Account.ValueString(), plan.Engine.ValueString(), *kmiworkload)
 	if err != nil {
 		resp.Diagnostics.AddError(

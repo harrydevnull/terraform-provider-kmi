@@ -46,6 +46,7 @@ func (client *KMIRestClient) CreateWorkloadDetails(account string, engineName st
 	if err != nil {
 		return nil, err
 	}
+
 	tflog.Info(context.Background(), "CreateWorkloadDetails payload %v\n"+string(out))
 	resp, err := client.httpclient.Post(idenityengineurl, "application/xml", bytes.NewBuffer(out))
 	if err != nil {
