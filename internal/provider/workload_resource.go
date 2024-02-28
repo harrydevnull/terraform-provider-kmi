@@ -156,6 +156,57 @@ func (r *workloadResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *workloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+
+	var plan WorkloadVMResourceModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	kmiworkload := &kmi.Workload{
+		Projection: plan.Name.ValueString(),
+		Region: struct {
+			Text   string "xml:\",chardata\""
+			Source string "xml:\"source,attr,omitempty\""
+		}{
+			Text: plan.Region.ValueString(),
+		},
+		LinodeLabel: &kmi.LinodeLabel{
+			Text: plan.LinodeLabel.ValueString(),
+		},
+	}
+	tflog.Info(ctx, "Create workload payload %v\n")
+
+	_, err := r.client.CreateWorkloadDetails(plan.Account.ValueString(), plan.Engine.ValueString(), *kmiworkload)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating workload",
+			"Could not create order, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	kmiworkloadfromservice, err := r.client.GetWorkloadDetails(plan.Account.ValueString(), plan.Engine.ValueString(), plan.Name.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating workload",
+			"Could not create workload, unexpected error: "+err.Error(),
+		)
+		return
+	}
+	plan.Name = types.StringValue(kmiworkloadfromservice.Projection)
+	plan.Region = types.StringValue(kmiworkloadfromservice.Region.Text)
+	plan.LinodeLabel = types.StringValue(kmiworkloadfromservice.LinodeLabel.Text)
+
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	resp.State.Set(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
