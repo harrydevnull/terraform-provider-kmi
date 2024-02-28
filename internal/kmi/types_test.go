@@ -2,6 +2,7 @@ package kmi
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 	"strings"
 
@@ -203,6 +204,28 @@ func Test_GroupsUnMarshalling(t *testing.T) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
 
+}
+
+func Test_WorkloadMarshalling(t *testing.T) {
+	wk := Workload{
+		Projection: "test",
+		Region: struct {
+			Text   string `xml:",chardata"`
+			Source string `xml:"source,attr,omitempty"`
+		}{
+			Text: "test_region",
+		},
+		LinodeLabel: &LinodeLabel{
+			Text: "*",
+		},
+	}
+
+	out, _ := xml.MarshalIndent(wk, "", "")
+	fmt.Println(string(out))
+	expected := []byte(`<workload projection="test"><region>test_region</region><linode_label>*</linode_label></workload>`)
+	if !reflect.DeepEqual(out, expected) {
+		t.Errorf("Marshalling() = %v, want %v", out, expected)
+	}
 }
 
 func Test_BlockSecretUnmarshalling(t *testing.T) {
