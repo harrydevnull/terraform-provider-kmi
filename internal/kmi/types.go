@@ -158,6 +158,9 @@ type KMIGroup struct {
 type KMIDefinition struct {
 	XMLName       xml.Name     `xml:"definition"`
 	Text          string       `xml:",chardata"`
+	Adders        string       `xml:"adders,omitempty"`
+	Modifiers     string       `xml:"modifiers,omitempty"`
+	Readers       string       `xml:"readers,omitempty"`
 	Type          string       `xml:"type,attr"`
 	ExpirePeriod  string       `xml:"expire_period,omitempty"`
 	RefreshPeriod string       `xml:"refresh_period,omitempty"`
@@ -168,6 +171,9 @@ type KMIDefinition struct {
 type KMIDefinitionResponse struct {
 	XMLName       xml.Name `xml:"definition"`
 	Text          string   `xml:",chardata"`
+	Adders        string   `xml:"adders"`
+	Modifiers     string   `xml:"modifiers"`
+	Readers       string   `xml:"readers"`
 	Name          string   `xml:"name,attr"`
 	Source        string   `xml:"source,attr"`
 	Type          string   `xml:"type,attr"`
@@ -184,10 +190,6 @@ type KMIDefinitionResponse struct {
 		Text  string `xml:",chardata"`
 		Index string `xml:"index,attr"`
 	} `xml:"secret"`
-}
-
-type kmigenerator interface {
-	RequestPayload() ([]byte, error)
 }
 
 type BlockSecret struct {

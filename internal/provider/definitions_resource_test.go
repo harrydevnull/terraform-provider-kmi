@@ -9,7 +9,6 @@ import (
 )
 
 func Test_Definition_AzureDirectly(t *testing.T) {
-
 	defn := kmi.KMIDefinition{
 		AutoGenerate: "True",
 		Type:         "azure_sp",
@@ -21,11 +20,9 @@ func Test_Definition_AzureDirectly(t *testing.T) {
 	if !reflect.DeepEqual(string(out), string(data)) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
-
 }
 
 func Test_Definition_SSL(t *testing.T) {
-
 	defn := kmi.KMIDefinition{
 		AutoGenerate: "True",
 		Type:         "ssl_cert",
@@ -37,7 +34,6 @@ func Test_Definition_SSL(t *testing.T) {
 	if !reflect.DeepEqual(string(out), string(data)) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
-
 }
 
 func Test_Definition_SSLCA(t *testing.T) {
@@ -59,13 +55,10 @@ func Test_Definition_SSLCA(t *testing.T) {
 	if !reflect.DeepEqual(string(out), string(data)) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
-
 }
 
 func Test_Definition_Opaque(t *testing.T) {
-
 	defn := kmi.KMIDefinition{
-
 		Type: "opaque",
 	}
 	out, _ := xml.MarshalIndent(defn, "", "")
@@ -76,7 +69,6 @@ func Test_Definition_Opaque(t *testing.T) {
 	if !reflect.DeepEqual(string(out), string(data)) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
-
 }
 
 func Test_Definition_SymetricKey(t *testing.T) {
@@ -87,6 +79,7 @@ func Test_Definition_SymetricKey(t *testing.T) {
 	})
 
 	defn := kmi.KMIDefinition{
+		Adders:        "test_adder",
 		Type:          "symmetric_key",
 		ExpirePeriod:  "3 months",
 		RefreshPeriod: "1 months",
@@ -95,11 +88,10 @@ func Test_Definition_SymetricKey(t *testing.T) {
 	}
 	out, _ := xml.MarshalIndent(defn, "", "")
 
-	data := []byte(`<definition type="symmetric_key"><expire_period>3 months</expire_period><refresh_period>1 months</refresh_period><auto_generate>True</auto_generate><option name="key_size_bytes">16</option></definition>`)
+	data := []byte(`<definition type="symmetric_key"><adders>test_adder</adders><expire_period>3 months</expire_period><refresh_period>1 months</refresh_period><auto_generate>True</auto_generate><option name="key_size_bytes">16</option></definition>`)
 	fmt.Println(string(out))
 	fmt.Println(string(data))
 	if !reflect.DeepEqual(string(out), string(data)) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
-
 }
