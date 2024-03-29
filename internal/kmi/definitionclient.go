@@ -8,11 +8,10 @@ import (
 	"net/http"
 )
 
-func (client *KMIRestClient) CreateDefinition(collectionName string, definitionName string, kmigenerator kmigenerator) error {
+func (client *KMIRestClient) CreateDefinition(collectionName string, definitionName string, definition KMIDefinition) error {
 	idenityengineurl := fmt.Sprintf("%s/definition/Col=%s/Def=%s", client.Host, collectionName, definitionName)
 	fmt.Println(idenityengineurl)
-	out, err := kmigenerator.RequestPayload()
-	fmt.Printf("CreateDefinition payload %v\n", string(out))
+	out, err := xml.MarshalIndent(definition, " ", "  ")
 	if err != nil {
 		return err
 	}

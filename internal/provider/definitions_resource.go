@@ -3,7 +3,6 @@ package provider
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"fmt"
 	"regexp"
 	"terraform-provider-kmi/internal/kmi"
@@ -43,6 +42,18 @@ func (r *definitionsResource) Metadata(_ context.Context, req resource.MetadataR
 func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"adders": schema.StringAttribute{
+				Optional:    true,
+				Description: "The group name of the admins who will manage the definition permissions. This can be set to the KMI account admin group. ",
+			},
+			"modifiers": schema.StringAttribute{
+				Optional:    true,
+				Description: "The group name of the admins who will manage the definition permissions. This can be set to the KMI account admin group. ",
+			},
+			"readers": schema.StringAttribute{
+				Optional:    true,
+				Description: "The group name of the admins who will read the definition  ",
+			},
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the definition to create. ",
@@ -171,6 +182,12 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	definition := kmi.KMIDefinition{
+		Adders:    plan.Adders.ValueString(),
+		Modifiers: plan.Modifiers.ValueString(),
+		Readers:   plan.Readers.ValueString(),
+	}
+
 	var err error
 	if plan.SSLCert != nil {
 		tflog.Info(ctx, "SSl cert is not nil")
@@ -183,11 +200,11 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 
 		}
 
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.SSLCert)
 	}
 	if plan.SymetricKey != nil {
 		tflog.Info(ctx, "Symetric key is not nil")
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SymetricKey)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.SymetricKey)
 	}
 	if plan.AzureSP != nil {
 		tflog.Info(ctx, "Azure SP is not nil")
@@ -206,12 +223,12 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 			)
 			return
 		}
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.AzureSP)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.AzureSP)
 	}
 
 	if !plan.Opaque.IsNull() {
 		tflog.Info(ctx, "Opaque is not nil")
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), Opaque{})
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, Opaque{})
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Definition",
@@ -242,7 +259,7 @@ func (r *definitionsResource) Create(ctx context.Context, req resource.CreateReq
 		tflog.Info(ctx, "Transparent is not nil")
 		transparent := Transparent{}
 
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), transparent)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, transparent)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Definition",
@@ -364,19 +381,25 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	definition := kmi.KMIDefinition{
+		Adders:    plan.Adders.ValueString(),
+		Modifiers: plan.Modifiers.ValueString(),
+		Readers:   plan.Readers.ValueString(),
+	}
+
 	var err error
 	if plan.SSLCert != nil {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SSLCert)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.SSLCert)
 	}
 	if plan.SymetricKey != nil {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.SymetricKey)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.SymetricKey)
 	}
 	if plan.AzureSP != nil {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), plan.AzureSP)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, plan.AzureSP)
 	}
 
 	if !plan.Opaque.IsNull() {
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), Opaque{})
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, Opaque{})
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Definition",
@@ -408,7 +431,7 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 		tflog.Info(ctx, "Transparent is not nil")
 		transparent := Transparent{}
 
-		err = r.client.CreateDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), transparent)
+		err = r.createDefinition(plan.CollectionName.ValueString(), plan.DefinitionName.ValueString(), definition, transparent)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Definition",
@@ -528,6 +551,9 @@ func boolStr(s bool) string {
 }
 
 type definitionResourceModel struct {
+	Adders         types.String `tfsdk:"adders"`
+	Modifiers      types.String `tfsdk:"modifiers"`
+	Readers        types.String `tfsdk:"readers"`
 	DefinitionName types.String `tfsdk:"name"`
 	CollectionName types.String `tfsdk:"collection_name"`
 	LastUpdated    types.String `tfsdk:"last_updated"`
@@ -559,25 +585,33 @@ func keySliceToList(ctx context.Context, keysSliceIn []DefinitionOption, diags *
 	return keys
 }
 
+type kmigenerator interface {
+	RequestPayload(kmi.KMIDefinition) (kmi.KMIDefinition, error)
+}
+
+func (r *definitionsResource) createDefinition(collectionName string, definitionName string, definition kmi.KMIDefinition, kmigenerator kmigenerator) error {
+	out, err := kmigenerator.RequestPayload(definition)
+	fmt.Printf("CreateDefinition payload %v\n", out)
+	if err != nil {
+		return err
+	}
+	return r.client.CreateDefinition(collectionName, definitionName, out)
+}
+
 type Opaque struct {
 }
 
-func (op Opaque) RequestPayload() ([]byte, error) {
-	defn := kmi.KMIDefinition{
-		Type: "opaque",
-	}
-	return xml.MarshalIndent(defn, "", "")
-
+func (op Opaque) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
+	definition.Type = "opaque"
+	return definition, nil
 }
 
 type Transparent struct {
 }
 
-func (op Transparent) RequestPayload() ([]byte, error) {
-	defn := kmi.KMIDefinition{
-		Type: "transparent",
-	}
-	return xml.MarshalIndent(defn, "", "")
+func (op Transparent) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
+	definition.Type = "transparent"
+	return definition, nil
 }
 
 type SSLCert struct {
@@ -592,10 +626,10 @@ type SSLCert struct {
 	SignACLGroup  types.String `tfsdk:"signaclgroup"`
 }
 
-func (s SSLCert) RequestPayload() ([]byte, error) {
+func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
 
 	if !s.Issuer.IsNull() && !s.IsCA.IsNull() {
-		return nil, fmt.Errorf("IsCA should not be set if Issuer is set ")
+		return kmi.KMIDefinition{}, fmt.Errorf("IsCA should not be set if Issuer is set ")
 	}
 
 	var options []*kmi.KMIOption
@@ -642,28 +676,22 @@ func (s SSLCert) RequestPayload() ([]byte, error) {
 		options = append(options, option)
 	}
 
-	defn := kmi.KMIDefinition{
-		AutoGenerate:  boolStr(s.AutoGenerate.ValueBool()),
-		Type:          "ssl_cert",
-		ExpirePeriod:  s.ExpiryPeriod.ValueString(),
-		RefreshPeriod: s.RefreshPeriod.ValueString(),
-		Options:       options,
-	}
-	return xml.MarshalIndent(defn, " ", "  ")
-
+	definition.AutoGenerate = boolStr(s.AutoGenerate.ValueBool())
+	definition.Type = "ssl_cert"
+	definition.ExpirePeriod = s.ExpiryPeriod.ValueString()
+	definition.RefreshPeriod = s.RefreshPeriod.ValueString()
+	definition.Options = options
+	return definition, nil
 }
 
 type AzureSP struct {
 	AutoGenerate types.Bool `tfsdk:"auto_generate"`
 }
 
-func (sp AzureSP) RequestPayload() ([]byte, error) {
-	defn := kmi.KMIDefinition{
-		AutoGenerate: boolStr(sp.AutoGenerate.ValueBool()),
-		Type:         "azure_sp",
-	}
-	return xml.MarshalIndent(defn, " ", "  ")
-
+func (sp AzureSP) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
+	definition.AutoGenerate = boolStr(sp.AutoGenerate.ValueBool())
+	definition.Type = "azure_sp"
+	return definition, nil
 }
 
 type SymetricKey struct {
@@ -673,7 +701,7 @@ type SymetricKey struct {
 	KeySizeBytes  types.Int64  `tfsdk:"key_size_bytes"`
 }
 
-func (sk SymetricKey) RequestPayload() ([]byte, error) {
+func (sk SymetricKey) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
 	var options []*kmi.KMIOption
 	if !sk.KeySizeBytes.IsNull() {
 		option := &kmi.KMIOption{
@@ -683,13 +711,10 @@ func (sk SymetricKey) RequestPayload() ([]byte, error) {
 		options = append(options, option)
 	}
 
-	defn := kmi.KMIDefinition{
-		AutoGenerate:  boolStr(sk.AutoGenerate.ValueBool()),
-		Type:          "symmetric_key",
-		ExpirePeriod:  sk.ExpiryPeriod.ValueString(),
-		RefreshPeriod: sk.RefreshPeriod.ValueString(),
-		Options:       options,
-	}
-	return xml.MarshalIndent(defn, " ", "  ")
-
+	definition.AutoGenerate = boolStr(sk.AutoGenerate.ValueBool())
+	definition.Type = "symmetric_key"
+	definition.ExpirePeriod = sk.ExpiryPeriod.ValueString()
+	definition.RefreshPeriod = sk.RefreshPeriod.ValueString()
+	definition.Options = options
+	return definition, nil
 }

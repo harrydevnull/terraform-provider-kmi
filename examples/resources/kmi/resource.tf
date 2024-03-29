@@ -55,6 +55,9 @@ output "collection_output" {
 }
 
 resource "kmi_definitions" "defn" {
+  readers         = local.reader_groupname
+  adders          = local.adder_groupname
+  modifiers       = local.modifier_groupname
   name            = local.definition_name
   collection_name = local.collection_name
   opaque = jsonencode({
@@ -66,6 +69,7 @@ resource "kmi_definitions" "defn" {
 }
 
 resource "kmi_definitions" "ssl_defn" {
+  adders          = local.adder_groupname
   name            = local.ssl_cert_definition_name
   collection_name = local.collection_name
   ssl_cert = {
@@ -74,6 +78,7 @@ resource "kmi_definitions" "ssl_defn" {
   depends_on = [kmi_collections.collection]
 }
 resource "kmi_definitions" "az_defn" {
+  modifiers       = local.modifier_groupname
   name            = local.azure_sp_definition_name
   collection_name = local.collection_name
   azure_sp = {
