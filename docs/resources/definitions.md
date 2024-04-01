@@ -22,9 +22,12 @@ description: |-
 
 ### Optional
 
+- `adders` (String) The group name of the admins who will manage the definition permissions. This can be set to the KMI account admin group.
 - `azure_sp` (Attributes) The Azure Service Principal to create. (see [below for nested schema](#nestedatt--azure_sp))
 - `b64encoded` (Boolean) Should the secret be Base64-encoded? If it's not set, then is "false"
+- `modifiers` (String) The group name of the admins who will manage the definition permissions. This can be set to the KMI account admin group.
 - `opaque` (String) The Opaque definition to create.
+- `readers` (String) The group name of the admins who will read the definition
 - `ssl_cert` (Attributes) The SSL certificate to create. (see [below for nested schema](#nestedatt--ssl_cert))
 - `symmetric_key` (Attributes) (see [below for nested schema](#nestedatt--symmetric_key))
 - `transparent` (String) The Transparent definition to create.
