@@ -54,8 +54,8 @@ func (client *KMIRestClient) CreateBlockSecret(collectionName string, definition
 }
 
 func (client *KMIRestClient) DeleteDefinition(collectionName string, definitionName string) error {
+	idenityengineurl := fmt.Sprintf("%s/definition/Col=%s/Def=%s", client.Host, collectionName, definitionName)
 
-	idenityengineurl := fmt.Sprintf("%s/definition/Col=%s/Def=$%s", client.Host, collectionName, definitionName)
 	req, err := http.NewRequest("DELETE", idenityengineurl, nil)
 	if err != nil {
 		return err
@@ -65,6 +65,10 @@ func (client *KMIRestClient) DeleteDefinition(collectionName string, definitionN
 		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("error while calling DeleteDefinition api  %s and payload is %v", resp.Status, resp)
+	}
 	return nil
 }
 
