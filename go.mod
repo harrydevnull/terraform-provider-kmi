@@ -1,6 +1,8 @@
 module terraform-provider-kmi
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
