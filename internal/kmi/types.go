@@ -106,15 +106,22 @@ type Workload struct {
 	XMLName    xml.Name `xml:"workload"`
 	Text       string   `xml:",chardata"`
 	Projection string   `xml:"projection,attr"`
-	Source     string   `xml:"source,attr"`
+	Source     string   `xml:"source,attr,omitempty"`
 	Region     struct {
 		Text   string `xml:",chardata"`
-		Source string `xml:"source,attr"`
+		Source string `xml:"source,attr,omitempty"`
 	} `xml:"region"`
-	KubernetesServiceAccount struct {
-		Text   string `xml:",chardata"`
-		Source string `xml:"source,attr"`
-	} `xml:"kubernetes_service_account"`
+	KubernetesServiceAccount *K8ServiceAccount `xml:"kubernetes_service_account"`
+	LinodeLabel              *LinodeLabel      `xml:"linode_label,omitempty"`
+}
+
+type K8ServiceAccount struct {
+	Text   string `xml:",chardata"`
+	Source string `xml:"source,attr"`
+}
+type LinodeLabel struct {
+	Text   string `xml:",chardata"`
+	Source string `xml:"source,attr,omitempty" `
 }
 
 type Collection struct {
