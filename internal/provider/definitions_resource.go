@@ -101,9 +101,17 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "KMI path to the template used to sign the certificate by the CA.",
 					},
+					"signacl": schema.StringAttribute{
+						Optional:    true,
+						Description: "Collection that is eligible to sign the certificate. Can be used for CA definition setup.",
+					},
+					"signacldomain": schema.StringAttribute{
+						Optional:    true,
+						Description: "Much like a signacl rule, it restricts signing to the named collection. However, it has the additional restriction of only applying to a particular domain name or wildcarded domain (denoted by a domain starting with '*.' ). Can be used for CA definition setup.",
+					},
 					"signaclgroup": schema.StringAttribute{
 						Optional:    true,
-						Description: "Group that is eligible to sign the certificate. Required for CA definition setup.",
+						Description: "Group that is eligible to sign the certificate. Can be used for CA definition setup.",
 					},
 				},
 				Optional:    true,
@@ -623,6 +631,8 @@ type SSLCert struct {
 	Cn            types.String `tfsdk:"cn"`
 	Sans          types.String `tfsdk:"subj_alt_names"`
 	CAName        types.String `tfsdk:"ca_name"`
+	SignACL       types.String `tfsdk:"signacl"`
+	SignACLDomain types.String `tfsdk:"signacldomain"`
 	SignACLGroup  types.String `tfsdk:"signaclgroup"`
 }
 
@@ -658,6 +668,20 @@ func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition
 		option := &kmi.KMIOption{
 			Name: "subj_alt_names",
 			Text: s.Sans.ValueString(),
+		}
+		options = append(options, option)
+	}
+	if !s.SignACL.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "signacl:" + s.SignACL.ValueString(),
+			Text: "true",
+		}
+		options = append(options, option)
+	}
+	if !s.SignACLDomain.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "signacldomain:" + s.SignACLDomain.ValueString(),
+			Text: "true",
 		}
 		options = append(options, option)
 	}
