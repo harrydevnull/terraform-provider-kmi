@@ -61,7 +61,9 @@ Optional:
 - `is_ca` (Number) Is the SSL certificate a CA.
 - `issuer` (String) The issuer for the SSL certificate.
 - `refresh_period` (String) The refresh period for the symmetric key.
-- `signaclgroup` (String) Group that is eligible to sign the certificate. Required for CA definition setup.
+- `signacl` (String) Collection that is eligible to sign the certificate. Can be used for CA definition setup.
+- `signacldomain` (String) Much like a signacl rule, it restricts signing to the named collection. However, it has the additional restriction of only applying to a particular domain name or wildcarded domain (denoted by a domain starting with '*.' ). Can be used for CA definition setup.
+- `signaclgroup` (String) Group that is eligible to sign the certificate. Can be used for CA definition setup.
 - `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
 
 
