@@ -97,6 +97,10 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "Subject Alternative Names of the SSL certificate. ",
 					},
+					"subj_alt_uris": schema.StringAttribute{
+						Optional:    true,
+						Description: "Subject Alternative URIs of the SSL certificate. ",
+					},
 					"ca_name": schema.StringAttribute{
 						Optional:    true,
 						Description: "KMI path to the template used to sign the certificate by the CA.",
@@ -623,17 +627,18 @@ func (op Transparent) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefin
 }
 
 type SSLCert struct {
-	AutoGenerate  types.Bool   `tfsdk:"auto_generate"`
-	ExpiryPeriod  types.String `tfsdk:"expire_period"`
-	RefreshPeriod types.String `tfsdk:"refresh_period"`
-	Issuer        types.String `tfsdk:"issuer"`
-	IsCA          types.Int64  `tfsdk:"is_ca"`
-	Cn            types.String `tfsdk:"cn"`
-	Sans          types.String `tfsdk:"subj_alt_names"`
-	CAName        types.String `tfsdk:"ca_name"`
-	SignACL       types.String `tfsdk:"signacl"`
-	SignACLDomain types.String `tfsdk:"signacldomain"`
-	SignACLGroup  types.String `tfsdk:"signaclgroup"`
+	AutoGenerate    types.Bool   `tfsdk:"auto_generate"`
+	ExpiryPeriod    types.String `tfsdk:"expire_period"`
+	RefreshPeriod   types.String `tfsdk:"refresh_period"`
+	Issuer          types.String `tfsdk:"issuer"`
+	IsCA            types.Int64  `tfsdk:"is_ca"`
+	Cn              types.String `tfsdk:"cn"`
+	SubjectAltNames types.String `tfsdk:"subj_alt_names"`
+	SubjectAltUris  types.String `tfsdk:"subj_alt_uris"`
+	CAName          types.String `tfsdk:"ca_name"`
+	SignACL         types.String `tfsdk:"signacl"`
+	SignACLDomain   types.String `tfsdk:"signacldomain"`
+	SignACLGroup    types.String `tfsdk:"signaclgroup"`
 }
 
 func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition, error) {
@@ -664,10 +669,17 @@ func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition
 		}
 		options = append(options, option)
 	}
-	if !s.Sans.IsNull() {
+	if !s.SubjectAltNames.IsNull() {
 		option := &kmi.KMIOption{
 			Name: "subj_alt_names",
-			Text: s.Sans.ValueString(),
+			Text: s.SubjectAltNames.ValueString(),
+		}
+		options = append(options, option)
+	}
+	if !s.SubjectAltUris.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "subj_alt_uris",
+			Text: s.SubjectAltUris.ValueString(),
 		}
 		options = append(options, option)
 	}
