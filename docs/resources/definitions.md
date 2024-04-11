@@ -65,6 +65,7 @@ Optional:
 - `signacldomain` (String) Much like a signacl rule, it restricts signing to the named collection. However, it has the additional restriction of only applying to a particular domain name or wildcarded domain (denoted by a domain starting with '*.' ). Can be used for CA definition setup.
 - `signaclgroup` (String) Group that is eligible to sign the certificate. Can be used for CA definition setup.
 - `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
+- `subj_alt_uris` (String) Subject Alternative URIs of the SSL certificate.
 
 
 <a id="nestedatt--symmetric_key"></a>
