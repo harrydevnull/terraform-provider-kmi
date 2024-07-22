@@ -31,6 +31,8 @@ func NewDefinitionsResource() resource.Resource {
 // definitionsResource is the resource implementation.
 type definitionsResource struct {
 	client *kmi.KMIRestClient
+	// Can be removed once KMI API bug failing parallel requests is resolved (KMISUP-1541)
+	sync.Mutex
 }
 
 // Metadata returns the resource type name.
@@ -186,13 +188,10 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 	}
 }
 
-// Can be removed once KMI API bug failing parallel requests is resolved (KMISUP-1541)
-var mu sync.Mutex
-
 // Create creates the resource and sets the initial Terraform state.
 func (r *definitionsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	mu.Lock()
-	defer mu.Unlock()
+	r.Lock()
+	defer r.Unlock()
 	var plan definitionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -391,8 +390,8 @@ func (r *definitionsResource) Read(ctx context.Context, req resource.ReadRequest
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	mu.Lock()
-	defer mu.Unlock()
+	r.Lock()
+	defer r.Unlock()
 	var plan definitionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -523,8 +522,8 @@ func (r *definitionsResource) Update(ctx context.Context, req resource.UpdateReq
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *definitionsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	mu.Lock()
-	defer mu.Unlock()
+	r.Lock()
+	defer r.Unlock()
 	var state definitionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
