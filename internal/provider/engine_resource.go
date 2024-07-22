@@ -329,7 +329,7 @@ func (r *engineResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		err := r.client.DeleteWorkload(state.AccountName.ValueString(), state.Engine.ValueString(), projectionafter.Projection)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error Deleteing Identity Engine",
+				"Error Deleting Identity Engine",
 				"Could not delete Identity (workload), unexpected error: "+err.Error(),
 			)
 			return
