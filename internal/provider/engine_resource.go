@@ -129,7 +129,7 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
+			"Could not save Identity, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -160,8 +160,8 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
+			"Error Reading Identity Engine",
+			"Could not get Identity, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -171,7 +171,7 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error Reading Identity Engine",
-				"Could not create Identity, unexpected error: "+err.Error(),
+				"Could not get Identity (workload details), unexpected error: "+err.Error(),
 			)
 			return
 		}
@@ -185,7 +185,7 @@ func (r *engineResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 			resp.Diagnostics.AddError(
 				"Error Reading Identity Engine",
-				"Could not create Identity, unexpected error: "+err.Error(),
+				"Could not get Identity (system:serviceaccount:namespace:serviceaccount format wrong), unexpected error: "+err.Error(),
 			)
 		}
 		//check if length of the string is 4
@@ -263,8 +263,8 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 	tflog.Debug(ctx, "Getting Identity engine")
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
+			"Error Updating Identity Engine",
+			"Could not get Identity, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -273,8 +273,8 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		kmiprojection, err := r.client.GetWorkloadDetails(plan.AccountName.ValueString(), plan.Engine.ValueString(), projectionafter.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error creating Identity Engine",
-				"Could not create Identity, unexpected error: "+err.Error(),
+				"Error Updating Identity Engine",
+				"Could not get Identity (workload details), unexpected error: "+err.Error(),
 			)
 			return
 		}
@@ -319,8 +319,8 @@ func (r *engineResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
+			"Error Deleting Identity Engine",
+			"Could not read Identity, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -329,8 +329,8 @@ func (r *engineResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		err := r.client.DeleteWorkload(state.AccountName.ValueString(), state.Engine.ValueString(), projectionafter.Projection)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error Reading Identity Engine",
-				"Could not create Identity, unexpected error: "+err.Error(),
+				"Error Deleting Identity Engine",
+				"Could not delete Identity (workload), unexpected error: "+err.Error(),
 			)
 			return
 		}
@@ -341,8 +341,8 @@ func (r *engineResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Identity Engine",
-			"Could not create Identity, unexpected error: "+err.Error(),
+			"Error Deleting Identity Engine",
+			"Could not delete Identity, unexpected error: "+err.Error(),
 		)
 		return
 	}
