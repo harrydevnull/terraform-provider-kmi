@@ -186,7 +186,7 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 	}
 }
 
-// Can be removed once KMI API bug failing parallel requests is resolved (KMISUP-1541)
+// Can be removed once KMI API bug failing parallel requests is resolved (KMISUP-1541).
 var mu sync.Mutex
 
 // Create creates the resource and sets the initial Terraform state.
