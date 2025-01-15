@@ -29,6 +29,13 @@ func (client *KMIRestClient) SaveIdentityEngine(account string, engineName strin
 	return nil
 }
 
+func SetCloudTypeIdentityEngine(cloud string) string {
+	if cloud != "" {
+		return cloud
+	}
+	return "linode"
+}
+
 func (client *KMIRestClient) GetIdentityEngine(account string, engineName string) (*IdentityEngine, error) {
 
 	idenityengineurl := fmt.Sprintf("%s/engine/Acct=%s/Eng=%s", client.Host, account, engineName)
