@@ -124,7 +124,7 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 		workloads = append(workloads, wkload)
 	}
 	engine := kmi.KMIEngine{
-		Cloud:     kmi.SetCloudTypeIdentityEngine(plan.Cloud.ValueString()),
+		Cloud:     kmi.SetCloudType(plan.Cloud.ValueString()),
 		Type:      "kubernetes",
 		Option:    options,
 		Workloads: workloads,
@@ -247,7 +247,7 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		workloads = append(workloads, wkload)
 	}
 	engine := kmi.KMIEngine{
-		Cloud:     kmi.SetCloudTypeIdentityEngine(plan.Cloud.ValueString()),
+		Cloud:     kmi.SetCloudType(plan.Cloud.ValueString()),
 		Type:      "kubernetes",
 		Option:    options,
 		Workloads: workloads,

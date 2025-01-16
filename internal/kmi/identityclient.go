@@ -29,7 +29,7 @@ func (client *KMIRestClient) SaveIdentityEngine(account string, engineName strin
 	return nil
 }
 
-func SetCloudTypeIdentityEngine(cloud string) string {
+func SetCloudType(cloud string) string {
 	if cloud != "" {
 		return cloud
 	}
