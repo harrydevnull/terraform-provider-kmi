@@ -14,4 +14,4 @@ generate:
 	go generate ./...
 
 
-.PHONY: testacc lint
+.PHONY: testacc lint generate
