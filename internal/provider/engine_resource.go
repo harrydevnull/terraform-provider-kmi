@@ -48,6 +48,10 @@ func (r *engineResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Required:    true,
 				Description: "The name of the account has been created on KMI ",
 			},
+			"cloud": schema.StringAttribute{
+				Optional:    true,
+				Description: "Cloud that uses this engine",
+			},
 			"api_endpoint": schema.StringAttribute{
 				Required:    true,
 				Description: "The Kuberenetes API endpoint of the Kuberenetes cluster has been created on KMI ",
@@ -120,7 +124,7 @@ func (r *engineResource) Create(ctx context.Context, req resource.CreateRequest,
 		workloads = append(workloads, wkload)
 	}
 	engine := kmi.KMIEngine{
-		Cloud:     "linode",
+		Cloud:     kmi.SetCloudType(plan.Cloud.ValueString()),
 		Type:      "kubernetes",
 		Option:    options,
 		Workloads: workloads,
@@ -243,7 +247,7 @@ func (r *engineResource) Update(ctx context.Context, req resource.UpdateRequest,
 		workloads = append(workloads, wkload)
 	}
 	engine := kmi.KMIEngine{
-		Cloud:     "linode",
+		Cloud:     kmi.SetCloudType(plan.Cloud.ValueString()),
 		Type:      "kubernetes",
 		Option:    options,
 		Workloads: workloads,
@@ -377,6 +381,7 @@ func (r *engineResource) Configure(_ context.Context, req resource.ConfigureRequ
 type EngineResourceModel struct {
 	Engine                   types.String            `tfsdk:"engine"`
 	AccountName              types.String            `tfsdk:"account_name"`
+	Cloud                    types.String            `tfsdk:"cloud"`
 	ApiEndpoint              types.String            `tfsdk:"api_endpoint"`
 	CertificateDataAuthority types.String            `tfsdk:"cas_base64"`
 	Source                   types.String            `tfsdk:"source"`
