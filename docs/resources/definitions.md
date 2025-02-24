@@ -66,6 +66,7 @@ Optional:
 - `signaclgroup` (String) Group that is eligible to sign the certificate. Can be used for CA definition setup.
 - `subj_alt_names` (String) Subject Alternative Names of the SSL certificate.
 - `subj_alt_uris` (String) Subject Alternative URIs of the SSL certificate.
+- `subject` (String) Subject Name of the SSL certificate.
 
 
 <a id="nestedatt--symmetric_key"></a>
