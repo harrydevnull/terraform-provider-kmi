@@ -95,3 +95,24 @@ func Test_Definition_SymetricKey(t *testing.T) {
 		t.Errorf("Marshalling() = %v, want %v", out, data)
 	}
 }
+
+func Test_Definition_SSL_subject(t *testing.T) {
+	var options []*kmi.KMIOption
+	options = append(options, &kmi.KMIOption{
+		Name: "subject",
+		Text: "/CN=test-user",
+	})
+
+	defn := kmi.KMIDefinition{
+		AutoGenerate: "True",
+		Type:         "ssl_cert",
+		Options:      options,
+	}
+	out, _ := xml.MarshalIndent(defn, "", "")
+	data := []byte(`<definition type="ssl_cert"><auto_generate>True</auto_generate><option name="subject">/CN=test-user</option></definition>`)
+	fmt.Println(string(out))
+	fmt.Println(string(data))
+	if !reflect.DeepEqual(string(out), string(data)) {
+		t.Errorf("Marshalling() = %v, want %v", out, data)
+	}
+}

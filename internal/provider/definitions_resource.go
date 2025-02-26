@@ -90,6 +90,10 @@ func (r *definitionsResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "Is the SSL certificate a CA. ",
 					},
+					"subject": schema.StringAttribute{
+						Optional:    true,
+						Description: "Subject Name of the SSL certificate. ",
+					},
 					"cn": schema.StringAttribute{
 						Optional:    true,
 						Description: "Common Name of the SSL certificate. ",
@@ -640,6 +644,7 @@ type SSLCert struct {
 	RefreshPeriod   types.String `tfsdk:"refresh_period"`
 	Issuer          types.String `tfsdk:"issuer"`
 	IsCA            types.Int64  `tfsdk:"is_ca"`
+	Subject         types.String `tfsdk:"subject"`
 	Cn              types.String `tfsdk:"cn"`
 	SubjectAltNames types.String `tfsdk:"subj_alt_names"`
 	SubjectAltUris  types.String `tfsdk:"subj_alt_uris"`
@@ -655,6 +660,10 @@ func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition
 		return kmi.KMIDefinition{}, fmt.Errorf("IsCA should not be set if Issuer is set ")
 	}
 
+	if !s.Subject.IsNull() && !s.Cn.IsNull() {
+		return kmi.KMIDefinition{}, fmt.Errorf("Subject should not be set if CN is set ")
+	}
+
 	var options []*kmi.KMIOption
 	if !s.IsCA.IsNull() {
 		option := &kmi.KMIOption{
@@ -667,6 +676,13 @@ func (s SSLCert) RequestPayload(definition kmi.KMIDefinition) (kmi.KMIDefinition
 		option := &kmi.KMIOption{
 			Name: "issuer",
 			Text: s.Issuer.ValueString(),
+		}
+		options = append(options, option)
+	}
+	if !s.Subject.IsNull() {
+		option := &kmi.KMIOption{
+			Name: "subject",
+			Text: s.Subject.ValueString(),
 		}
 		options = append(options, option)
 	}
